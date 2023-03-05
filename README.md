@@ -1,5 +1,5 @@
 # RacingGame
-Three staged car racing game development to a client server setup.
+Three staged car racing game developement to a client server setup.
 The first stage CarSpin simply shows 2 images of a car. The first car loops through an array of
 images giving the impression its spinning. The second car can be moved through the image array 
 using the left and right keys giving the impression its turning.
@@ -11,6 +11,7 @@ is a 2D overview of the tract and car. The game will also end if the cars collid
 but invokes a bounce reaction if they collide with the track boundary. Tha cars are operated by 
 the directional keys and WADZ keys.
 
+<In developement>
 The third stage DualRace uses a client and server setup to show a use of distributed programming.
 The user provides an ip address to log into the server and selects the player number before the 
 game starts. The game then behaves the same as the second stage and still ends when a user completes
