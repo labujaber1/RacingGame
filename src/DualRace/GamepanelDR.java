@@ -1,17 +1,15 @@
 package DualRace;
 
-import CarAndMap.CarCAM;
-import CarAndMap.MainframeCAM;
-import CarAndMap.SoundCAM;
-import CarAndMap.TrackCAM;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 
 /**
  * Title: Distributed multi-player racing game.
@@ -21,30 +19,29 @@ import java.net.URL;
  */
 public class GamepanelDR extends JPanel {
 
-    private BufferedImage m_imageG, m_imageP,m_crowd,m_cup,m_tree,m_wall,m_bush;
+    private BufferedImage m_crowd,m_cup,m_tree,m_wall,m_bush;
     private Timer animationTimer;
-    private ImageIcon greenCarArr[], policeCarArr[];
-    //private BufferedImage greenCarArr[], policeCarArr[];
+    private ClientDR m_cdr = new ClientDR(getPortNumber(),serverIpAddress());
+    //private ImageIcon greenCarArr[], policeCarArr[];
+    private BufferedImage greenCarArr[], policeCarArr[];
     private CarDR m_greenCar,m_policeCar;
-    private TrackDR m_track;
-    private int m_trackChoice;
-    private MainframeDR mf;
-    private SoundDR sound;
-    private Boolean go = false;
-    private String m_crashGreen, m_crashPolice, m_crashCars, m_cheer, m_countdown;
+    private int m_trackChoice,m_player,m_portNumber;
+    private final SoundDR sound;
+    private Boolean m_go = false, m_canStart = false;
+    private String m_crashGreen, m_crashPolice, m_crashCars, m_cheer, m_countdown, m_ipAddress;
 
     /**
      * Read in two sets of car images into arrays.
      */
     public GamepanelDR() {
-        // instantiate cars and image arrays
-        sound = new SoundDR();
-        m_trackChoice = chooseTrack();
         int totalImages = 16;
-        greenCarArr = new ImageIcon[totalImages];
-        policeCarArr = new ImageIcon[totalImages];
-        //greenCarArr = new BufferedImage[totalImages];
-        //policeCarArr = new BufferedImage[totalImages];
+        sound = new SoundDR();
+        // select track
+        m_trackChoice = chooseTrack();
+
+        // instantiate cars and image arrays
+        greenCarArr = new BufferedImage[totalImages];
+        policeCarArr = new BufferedImage[totalImages];
         m_crashGreen = ("Sounds/fast-collision.wav");
         m_crashPolice = ("Sounds/clank-car-crash.wav");
         m_crashCars = ("Sounds/squish.wav");
@@ -55,11 +52,10 @@ public class GamepanelDR extends JPanel {
         try {
             for (int i = 0; i < greenCarArr.length; i++) {
                 int imageIndex = i + 1;
-                m_imageG = getImage("/carGreen/carGreen" + imageIndex + ".png");
-                greenCarArr[i] = new ImageIcon(m_imageG);
-
-                m_imageP = getImage("/carPolice/carPolice" + imageIndex + ".png");
-                policeCarArr[i] = new ImageIcon(m_imageP);
+                BufferedImage m_imageG = getImage("/carGreen/carGreen" + imageIndex + ".png");
+                greenCarArr[i] =  m_imageG;
+                BufferedImage m_imageP = getImage("/carPolice/carPolice" + imageIndex + ".png");
+                policeCarArr[i] = m_imageP;
             }
             m_crowd = getImage("/crowd2.jpg");
             m_cup = getImage("/cup.jpg");
@@ -81,7 +77,7 @@ public class GamepanelDR extends JPanel {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        m_track = new TrackDR(m_trackChoice,800,600);
+        TrackDR m_track = new TrackDR(m_trackChoice, 800, 600);
         m_track.drawTrack(m_trackChoice,g);
         if (m_trackChoice == 0) {
             g2d.drawImage(m_crowd, 150, 140, null);
@@ -95,10 +91,10 @@ public class GamepanelDR extends JPanel {
             m_track.drawObstacle(g,m_bush,120,300,0,0);
             m_track.drawObstacle(g,m_wall,590,460,0,0);
         } else {System.exit(0);}
-        // centre lap and speed display
+        // centre lap, speed display and start countdown
         g2d.setColor(Color.white);
         g2d.setFont(new Font("MV Boli", Font.BOLD, 20));
-        if(go == true) {
+        if(m_go && m_canStart) {
             g2d.drawString("GET READY", 450, 100);
             stopAnimation();
             resetGo();
@@ -108,33 +104,172 @@ public class GamepanelDR extends JPanel {
         g2d.drawString("Police car laps: " + m_policeCar.getLap() / 10 + " speed: " + m_policeCar.getSpeed() * 10 + "mph", 180, 290);
         g2d.setColor(Color.yellow);
         // if car completes 3 laps announce the winner
-        if (m_greenCar.getLap() == 7 || m_policeCar.getLap() == 30) {
-            if (m_greenCar.getLap() == 7) {
+        if (m_greenCar.getLap() == 30 || m_policeCar.getLap() == 30) {
+            if (m_greenCar.getLap() == 30) {
                 g2d.drawString("The winner is the green car well done", 190, 330);
             }
             if (m_policeCar.getLap() == 30) {
                 g2d.drawString("The winner is the police car well done", 190, 330);
             }
             g2d.drawImage(m_cup, 580, 240, null);
-            //sound.cheer();
-            sound.Play2(m_cheer);
+            sound.Play(m_cheer);
             stopAnimation();
         }
-
         try {
             if (animationTimer.isRunning()) {
                 // move image and calc turn of car
                 moveImage();
+                g2d.drawImage(greenCarArr[m_greenCar.getCurrentImage()],(int) m_greenCar.getX(), (int) m_greenCar.getY(),50,50,this);
+                g2d.drawImage(policeCarArr[m_policeCar.getCurrentImage()],(int) m_policeCar.getX(), (int) m_policeCar.getY(),50,50,this);
                 // check if cars collide with boundary or each other
-                checkCarCollision(g,m_track);
+                checkCarCollision(g, m_track);
                 // update lap count
                 lapCount(g);
             }
-            greenCarArr[m_greenCar.getCurrentImage()].paintIcon(this, g2d, (int) m_greenCar.getX(), (int) m_greenCar.getY());
-            policeCarArr[m_policeCar.getCurrentImage()].paintIcon(this, g2d, (int) m_policeCar.getX(), (int) m_policeCar.getY());
+
         } catch (Exception e) {
             System.out.println("Error checking animation timer: " + e.getMessage());
         }
+    }
+
+    public void runningComms() {
+        System.out.println("runningComms");
+        // do on separate thread
+        Thread commsThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                do{
+                    handleClientTraffic();
+                    m_cdr.sendData(packController());
+                } while(m_go ==true);
+            }});
+        commsThread.start();
+    }
+    /**
+     * Get ip address and port number from the user via JOption pane
+     */
+    public String serverIpAddress()
+    {
+        String res = JOptionPane.showInputDialog("Enter an IP address","localhost");
+        if(res == null)
+        {
+            System.exit(0);
+        }
+        return res;
+    }
+    public int getPortNumber()
+    {
+        int ret = 0;
+        while(ret == 0)
+        {
+            String res = JOptionPane.showInputDialog("Enter a port number","8888");
+            if (res.isBlank() || res == "2" ) {
+                System.exit(0);
+            }
+            try
+            {
+                ret = Integer.parseInt(res);
+            } catch (NumberFormatException e)
+            {
+                JOptionPane.showMessageDialog(null, "This is not a number try again");
+            }
+        }
+        return ret;
+    }
+
+    public void setPlayer(String ply)
+    {
+        System.out.println("setPlayer");
+        m_player= Integer.parseInt(ply);
+
+    }
+
+    public void startClientServer() throws IOException {
+        System.out.println("startClientServer()");
+        // start client
+        m_cdr.run();
+        System.out.println("This client is player "+m_player);
+        runningComms();
+
+    }
+
+    public void handleClientTraffic()
+    {
+        System.out.println("handleClientTraffic");
+        String incoming = m_cdr.getRecDat();
+        if(incoming!=null) {
+            if (incoming.equals("1") || incoming.equals("2")) {
+                setPlayer(incoming);
+            }
+            // update player car status and player number
+            if (m_player == 1) {
+                // assign as controller else non controller
+                System.out.println("Player 1 chosen");
+            }
+            if (m_player == 2) {
+                System.out.println("Ah crap I'm player 2");
+            }
+            if (incoming.equals("GO")) {
+                startGameConfirm();
+            } else {
+                unpackNonController(incoming);
+            }
+        }
+    }
+    public void stopClientServer() throws IOException
+    {
+        System.out.println("stopClientServer");
+        m_cdr.close();
+        m_go = false;
+
+    }
+
+    public void startGameConfirm()
+    {
+        System.out.println("startGameConfirm");
+        m_canStart = true;
+
+    }
+
+    public Boolean canStartGame()
+    {
+        System.out.println("canStartGame");
+        if(m_canStart==true){ return true; }
+        else { return false; }
+
+    }
+
+    /**
+     * Check received message:
+     * if single number then assign player the number
+     * else send to car class to set car data
+     * @param receivedCarData data received from the server
+     */
+    public void unpackNonController(String receivedCarData)  {
+        System.out.println("unpackNonController");
+        if(receivedCarData.length()==1 && receivedCarData.contains("1"))
+        {
+            m_player = 1;
+        }
+        if(receivedCarData.length()==1 && receivedCarData.contains("2"))
+        {
+            m_player = 2;
+        }
+        if(receivedCarData.length()>2)
+        {
+            // change to non controller
+            m_greenCar.setCarData(receivedCarData);
+        }
+        System.out.println("Unpacking car data");
+    }
+
+    public String packController()
+    {
+        System.out.println("packController");
+        //  change to controller
+        String carDt = m_greenCar.getCurrentImage()+","+m_greenCar.getX()+","+m_greenCar.getY()+","+m_greenCar.getSpeed()+","+m_greenCar.getLap();
+        System.out.println("Packing car data to send gamepanel packcontroller");
+        return carDt;
     }
 
     /**
@@ -143,7 +278,8 @@ public class GamepanelDR extends JPanel {
     public int chooseTrack()
     {
         String[] options = {"Track 1", "Track 2"};
-        int trackChoice = JOptionPane.showOptionDialog(null,"Select a track", "Choose track",
+        int trackChoice;
+        trackChoice = JOptionPane.showOptionDialog(null,"Select a track", "Choose track",
                 JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
         return trackChoice;
     }
@@ -266,51 +402,36 @@ public class GamepanelDR extends JPanel {
      */
     public void checkCarCollision(Graphics g,TrackDR track)
     {
-        Shape green =  m_greenCar.getCarBoundary();
-        Shape police =  m_policeCar.getCarBoundary();
+        Rectangle2D green =  m_greenCar.getCarBoundary(g);
+        Rectangle2D police =  m_policeCar.getCarBoundary(g);
+
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(Color.yellow);
-        g2d.draw(police);
-        g2d.draw(green);
-        //System.out.println("Collision m_x: "+c.getX()+", m_y: "+c.getY());
-        // hit map boundaries
+        g2d.setColor(Color.white);
+
+        // hit map boundaries with different message and sound played for each car
         if(track.getInnerBounds().intersects(green.getBounds2D()) || !track.getOuterBounds().intersects(green.getBounds2D())
          || track.getObstacleBounds().intersects(green.getBounds2D()))
         {
-            sound.crashGreen();
-            //sound.Play2(m_crashGreen);
-            if(m_greenCar.getSpeed() > 0) {
-                m_greenCar.setSpeed(-m_greenCar.getSpeed() - m_greenCar.getSpeed());
-            }
-            else {
-                m_greenCar.setSpeed(-m_greenCar.getSpeed() - m_greenCar.getSpeed());
-            }
-            System.out.println("Green car crashed into boundary");
+            sound.Play(m_crashGreen);
+            m_greenCar.setSpeed(-m_greenCar.getSpeed() - m_greenCar.getSpeed());
+            System.out.println("Green car collided with the boundary");
         }
         if(track.getInnerBounds().intersects( police.getBounds2D()) || !track.getOuterBounds().intersects(police.getBounds2D())
                 || track.getObstacleBounds().intersects(police.getBounds2D()))
-       {
-            sound.crashPolice();
-            if(m_policeCar.getSpeed() > 0) {
-                m_policeCar.setSpeed(-m_policeCar.getSpeed() - m_policeCar.getSpeed());
-            }
-            else {
-                m_policeCar.setSpeed(-m_policeCar.getSpeed() - m_policeCar.getSpeed());
-            }
-            System.out.println("Police car crashed into boundary");
-        }
-        // hit other car and end the game
-        if(police.intersects(green.getBounds2D()) || green.intersects(police.getBounds2D()))
         {
-            sound.crashCars();
-            m_policeCar.setSpeed(-m_policeCar.getSpeed());
-            m_greenCar.setSpeed(-m_greenCar.getSpeed());
-            stopAnimation();
-            // end game message
-            String infoMess = "You have crashed the cars.\n The game is over";
-            JOptionPane.showMessageDialog(null,infoMess,"Racing game warning",JOptionPane.INFORMATION_MESSAGE);
-            System.out.println("Cars have collided");
-            System.exit(0);
+            sound.Play(m_crashPolice);
+            m_policeCar.setSpeed(-m_policeCar.getSpeed() - m_policeCar.getSpeed());
+            System.out.println("Police car collided with the boundary");
+        }
+
+        if(green.intersects(police) ||
+                police.intersects(green))
+        // if statement to check if pixel visible or not within getbounds rectangle not affinetransformed shape
+        {
+            sound.Play(m_crashCars);
+            m_greenCar.setSpeed(-m_greenCar.getSpeed() - m_greenCar.getSpeed());
+            m_policeCar.setSpeed(-m_policeCar.getSpeed() - m_policeCar.getSpeed());
+            System.out.println("Cars have collided.");
         }
     }
 
@@ -319,12 +440,12 @@ public class GamepanelDR extends JPanel {
      * @param g - graphics interface
      */
     public void lapCount(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g.create();
+        Graphics2D g2d = (Graphics2D) g;
         Rectangle r1 = new Rectangle( 417, 30, 12, 100); // at start line
         Rectangle r2 = new Rectangle(418,410,4,100);  // at halfway point
 
-        Shape green =  m_greenCar.getCarBoundary();
-        Shape police =  m_policeCar.getCarBoundary();
+        Shape green =  m_greenCar.getCarBoundary(g);
+        Shape police =  m_policeCar.getCarBoundary(g);
 
         g2d.draw(r1);
         g2d.draw(r2);
@@ -350,9 +471,9 @@ public class GamepanelDR extends JPanel {
     public void resetGo()
     {
         //Plays a 3,2,1,go countdown sound file while display ready text
-        sound.countdown();
+        sound.Play(m_countdown);
         int delayT = 5000;
-        ActionListener taskPerformer = evt -> go = false;
+        ActionListener taskPerformer = evt -> m_go = false;
         ActionListener task = evt -> startAnimation ();
         new Timer(delayT, taskPerformer).start();
         new Timer(delayT,task).start();
@@ -368,7 +489,9 @@ public class GamepanelDR extends JPanel {
         m_greenCar.resetCars();
         m_policeCar.resetCars();
         m_policeCar.setY(80);
-        go = true;
+        m_go = true;
     }
+
+
 
 }

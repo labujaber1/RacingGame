@@ -59,7 +59,6 @@ public class CarCAM {
         double angle = (m_currentImage-4) * 22.5;
         AffineTransform af = new AffineTransform();
         af.rotate(Math.toRadians(angle),r.getCenterX(),r.getCenterY());
-        //System.out.println("Bound CentreX: "+r.getCenterX()+", CentreY: "+r.getCenterY());
         return  af.createTransformedShape(r);
     }
 
@@ -96,8 +95,6 @@ public class CarCAM {
         y += Math.sin(angleToRadians);
         m_x = m_x+(x * m_speed);
         m_y = m_y+(y * m_speed);
-        //System.out.println("MoveImg x: "+m_x+", y: "+m_y);
-        //System.out.println("Speed: "+m_speed);
     }
 
     /**

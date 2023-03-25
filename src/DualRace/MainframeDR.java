@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
 
 /**
  * Title: Distributed multi-player racing game.
@@ -16,7 +17,7 @@ import java.awt.event.KeyListener;
  * Description: Two player car race game using client server setup.
  */
 public class MainframeDR extends JFrame implements KeyListener{
-    private final JButton m_goBut, m_exitBut,m_greenBut,m_policeBut;
+    private final JButton m_goBut, m_exitBut, m_connect, m_disconnect;
     private final GamepanelDR m_gp;
     private JTextArea m_textarea;
 
@@ -36,18 +37,18 @@ public class MainframeDR extends JFrame implements KeyListener{
         cp.setLayout(new BorderLayout());
         // buttons and text area set
         m_goBut = new JButton("GO");
+        m_connect = new JButton("Connect");
+        m_disconnect = new JButton("Disconnect");
         m_exitBut = new JButton("EXIT");
-        m_greenBut = new JButton("Select the Green car");
-        m_policeBut = new JButton("or Police car to drive");
         m_goBut.setEnabled(true);
-        m_greenBut.setEnabled(true);
-        m_policeBut.setEnabled(true);
         m_goBut.setBackground(Color.GREEN);
+        m_connect.setEnabled(true);
+        m_disconnect.setEnabled(false);
         m_exitBut.setBackground(Color.gray);
         m_goBut.addActionListener(new ButtonWatcher());
+        m_connect.addActionListener(new ButtonWatcher());
+        m_disconnect.addActionListener(new ButtonWatcher());
         m_exitBut.addActionListener(new ButtonWatcher());
-        m_greenBut.addActionListener(new ButtonWatcher());
-        m_policeBut.addActionListener(new ButtonWatcher());
 
         m_textarea = new JTextArea("Hi and welcome to this super duper racing game -> Use directional keys to operate the green car and" +
                 " \nWADZ keys for the police car. Practice first, select car button when ready and press GO to start the race");
@@ -63,8 +64,8 @@ public class MainframeDR extends JFrame implements KeyListener{
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(1, 3));
         buttonPanel.add(m_goBut);
-        buttonPanel.add(m_greenBut);
-        buttonPanel.add(m_policeBut);
+        buttonPanel.add(m_connect);
+        buttonPanel.add(m_disconnect);
         buttonPanel.add(m_exitBut);
 
         m_gp.setBackground(Color.lightGray);
@@ -89,32 +90,40 @@ public class MainframeDR extends JFrame implements KeyListener{
         @Override
         public void actionPerformed(ActionEvent a) {
             Object buttonPressed =	a.getSource();
-            if (buttonPressed.equals(m_goBut))
+            if (buttonPressed.equals(m_goBut)&& m_gp.canStartGame())
             {
                 m_goBut.setEnabled(false);
                 m_gp.resetAllCars();
             }
+            if (buttonPressed.equals(m_goBut)&& !m_gp.canStartGame())
+            {
+                JOptionPane.showMessageDialog(null, "Waiting for player 2 to join");
+            }
+            if(buttonPressed.equals(m_connect))
+            {
+                m_connect.setEnabled(false);
+                m_disconnect.setEnabled(true);
+                try {
+                    m_gp.startClientServer();
+                } catch (IOException e) {
+                    System.out.println("Error starting client server: "+e.getMessage());
+                    throw new RuntimeException(e);
+                }
+            }
+            if(buttonPressed.equals(m_disconnect))
+            {
+                m_connect.setEnabled(true);
+                m_disconnect.setEnabled(false);
+                try {
+                    m_gp.stopClientServer();
+                } catch (IOException e) {
+                    System.out.println("Error closing client server: "+e.getMessage());
+                    throw new RuntimeException(e);
+                }
+            }
             if(buttonPressed.equals(m_exitBut))
             {
                System.exit(0);
-            }
-            if(buttonPressed.equals(m_greenBut))
-            {
-                m_greenBut.setBackground(Color.green);
-                m_policeBut.setEnabled(false);
-                m_policeBut.setBackground(Color.gray);
-                m_gp.setVisible(true);
-                // grey out or box other car and make inactive to user
-                // operate by other user
-            }
-            if(buttonPressed.equals(m_policeBut))
-            {
-                m_policeBut.setBackground(Color.green);
-                m_greenBut.setEnabled(false);
-                m_greenBut.setBackground(Color.gray);
-                m_gp.setVisible(true);
-                // grey out or box other car and make inactive to user
-                // operate by other user
             }
         }
     }

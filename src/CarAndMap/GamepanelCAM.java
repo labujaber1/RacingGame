@@ -113,18 +113,22 @@ public class GamepanelCAM extends JPanel {
             sound.cheer();
             stopAnimation();
         }
+        //greenCarArr[m_greenCar.getCurrentImage()].paintIcon(this, g2d, (int) m_greenCar.getX(), (int) m_greenCar.getY());
+        //policeCarArr[m_policeCar.getCurrentImage()].paintIcon(this, g2d, (int) m_policeCar.getX(), (int) m_policeCar.getY());
 
         try {
             if (animationTimer.isRunning()) {
                 // move image and calc turn of car
                 moveImage();
+                greenCarArr[m_greenCar.getCurrentImage()].paintIcon(this, g2d, (int) m_greenCar.getX(), (int) m_greenCar.getY());
+                policeCarArr[m_policeCar.getCurrentImage()].paintIcon(this, g2d, (int) m_policeCar.getX(), (int) m_policeCar.getY());
                 // check if cars collide with boundary or each other
                 checkCarCollision(g,m_track);
                 // update lap count
                 lapCount(g);
             }
-            greenCarArr[m_greenCar.getCurrentImage()].paintIcon(this, g2d, (int) m_greenCar.getX(), (int) m_greenCar.getY());
-            policeCarArr[m_policeCar.getCurrentImage()].paintIcon(this, g2d, (int) m_policeCar.getX(), (int) m_policeCar.getY());
+            //greenCarArr[m_greenCar.getCurrentImage()].paintIcon(this, g2d, (int) m_greenCar.getX(), (int) m_greenCar.getY());
+            //policeCarArr[m_policeCar.getCurrentImage()].paintIcon(this, g2d, (int) m_policeCar.getX(), (int) m_policeCar.getY());
         } catch (Exception e) {
             System.out.println("Error checking animation timer: " + e.getMessage());
         }
