@@ -64,7 +64,7 @@ public class CarDR {
 
         af.rotate(Math.toRadians(angle),r.getCenterX(),r.getCenterY());
         // Test check where boundary is by drawing and compare with collision getBounds2D method.
-        g2d.draw(af.createTransformedShape(r));
+        //g2d.draw(af.createTransformedShape(r));
         //return af.createTransformedShape(r);
 
         return r;
@@ -118,7 +118,10 @@ public class CarDR {
     }
 
 
-
+    /**
+     * Split incoming car data message to non controller
+     * @param data
+     */
     public void setCarData(String data)
     {
         String[] carData = data.split(",");

@@ -1,47 +1,112 @@
 package DualRace;
 
 import javax.swing.*;
+import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.net.*;
 import java.io.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 
-public class ServerDR extends Thread{
+
+import static DualRace.ServerDR.m_textArea;
+
+public class ServerDR extends Thread {
 
     private final ServerSocket m_listenSocket;
     private final ArrayList<Connection> m_connections;
-
-
-    // UDP server
+    private double x = 365.0; // for testing
+    public static JTextArea m_textArea;
+    private JFrame m_frame;
+    private JButton m_start,m_stop;
+    private JScrollPane m_sPane;
+    public static String m_portNum;
+    /**
+     * TCP server
+      */
     public ServerDR( int port ) throws IOException {
         this.setName("ServerThread");
+
         m_listenSocket = new ServerSocket(port);
         m_connections = new ArrayList<>();
+
+        m_frame = new JFrame("Car game server");
+        m_frame.setSize(500,500);
+        m_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        m_frame.getContentPane();
+        m_frame.setResizable(false);
+        Container c = new Container();
+        c.setLayout(new BorderLayout());
+        c.setBackground(Color.ORANGE);
+        m_frame.add(c);
+
+        // Text panel
+        JPanel textPanel = new JPanel(new BorderLayout(20,20));
+        textPanel.setPreferredSize(new Dimension(470,440));
+        textPanel.setBackground(Color.ORANGE);
+        m_textArea = new JTextArea();
+        m_textArea.setBackground(Color.lightGray);
+        m_textArea.append("Server output display: \n");
+        m_textArea.getPreferredScrollableViewportSize();
+        m_textArea.setLineWrap(false);
+        m_textArea.setEditable(false);
+
+        m_sPane = new JScrollPane(m_textArea);
+        m_sPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        m_sPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        textPanel.add(m_sPane,BorderLayout.CENTER);
+
+        m_start = new JButton("START SERVER");
+        m_start.setEnabled(true);
+        m_start.addActionListener(new ButtonWatcher());
+        m_stop = new JButton("STOP SERVER");
+        m_stop.setEnabled(true);
+        m_stop.addActionListener(new ButtonWatcher());
+        textPanel.add(m_start,BorderLayout.NORTH);
+        textPanel.add(m_stop,BorderLayout.SOUTH);
+
+        c.add(textPanel);
+        m_stop.setFocusable(true);
+        m_start.setFocusable(true);
+        m_frame.setFocusable(true);
+        m_frame.setVisible(true);
+
     }
+
+
+    public void start()
+    {
+        run();
+        
+    }
+
     @Override
     public void run()
     {
-        System.out.println("run serverDR");
+
+        m_textArea.append("\nrun: serverDR");
         try
         {
             //start server and wait for connection
-            while (m_connections.size()<2) // change for two player
+            while (m_connections.size()<2)
             {
-
-                System.out.println("waiting for socket connection");
+                if(m_connections.size()>0){checkConnections();}
+                m_textArea.append("\nServer: Run: waiting for socket connection");
                 Socket s = m_listenSocket.accept();
-                System.out.println("new socket connected");
+                m_textArea.append("\nServer: Run: new socket connected");
                 Connection c = new Connection( s ,this);
                 m_connections.add(c);
                 c.start();
-                System.out.println("New connection made");
-                System.out.println("Client " +m_connections.size()+ " connected: "+s);
+                m_textArea.append("\nServer: Run: New connection made");
+                m_textArea.append("\nServer: Run: Client " +m_connections.size()+ " connected: "+s);
                 if(m_connections.size()==1)
                 {
                     m_connections.get(0).send("1");
-                    System.out.println("Waiting for player 2 to join");
+
+                    m_textArea.append("\nWaiting for player 2 to join");
                 }
                 if(m_connections.size()==2)
                 {
@@ -49,52 +114,123 @@ public class ServerDR extends Thread{
                     reply("GO");
                 }
             }
-
         }
         catch (IOException e)
         {
             JOptionPane.showMessageDialog(null,"Client server startup failed"+e.getMessage(),"Connection failure",JOptionPane.INFORMATION_MESSAGE);
-            System.out.println("Listen : + " + e);
+            m_textArea.append("\nListen : + " + e);
         }
    }
 
+    /**
+     * Check connections list for dead connections and remove if found.
+     * Closed sockets due to error will reside in list and give incorrect
+     * connection results when main method run is assigning player status.
+     * Closed sockets cannot be reconnected to.
+     */
+    public void checkConnections()
+    {
+        m_textArea.append("\nserver: check connection..");
+        int i=0;
+        for(Connection c : m_connections){
+            if (!c.isAlive()){
+                i= m_connections.indexOf(c);
+                m_textArea.append("\nCheckConnection: Dead connection : "+c+"in connections list has been removed.");
+            }
+        }
+        m_connections.remove(i);
+    }
 
+    /**
+     *
+     * @param mes string message
+     */
     public void reply(String mes)
     {
-        System.out.println("reply");
+        //m_textArea.append("\nServer: reply: ");
+        String test = player2TestData();
         for (Connection con : m_connections) {
-            con.send(mes);
+
+            //m_connections.get(0).send(player2TestData()); //// testing
+
+            con.send(test); ///////////////////////// testing
+            //m_textArea.append("\nserver reply: "+test);
         }
-   }
+    }
+
+    /**
+     * Data generated to simulate other player for testing client processing.
+     * @return car data to simulate movement
+     */
+    public String player2TestData()
+    {
+        x = x+0.0002;
+        String sx = Double.toString(x);
+        String mes = "4,"+sx+",90,0,0";
+        //m_textArea.append("\nserver: player2testdata: "+mes);
+        return mes;
+    }
+
+    /**
+     * Close client socket.
+     */
     public void close()
     {
         try
         {
-            System.out.println("Closing socket");
+            m_textArea.append("\nServer: Close socket");
             m_listenSocket.close();
         }
         catch (IOException e)
         {
-            System.out.println("Failed to close Server Socket : + " + e);
+            m_textArea.append("\nFailed to close Server Socket : + " + e);
         }
     }
 
-    public static void main(String[] args)
-    {
-        try
-        {
-            ServerDR server = new ServerDR( 8888 );
-            server.start();
-            System.out.println("Server running...\nAwaiting client communication..");
+    /**
+     * Main method started separately from client program.
+     * @param args Main args
+     */
+    public static void main(String[] args) {
+
+        try {
+            m_portNum = JOptionPane.showInputDialog("Enter a port number","8887");
+
+            ServerDR server = new ServerDR( Integer.parseInt(m_portNum) );
+
+            m_textArea.append("\nPort number : "+m_portNum+"\nPress the button to start the server.");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        catch (IOException e)
-        {
-            System.out.println("Cant create server : + " + e);
-        }
+
     }
 
+    private class ButtonWatcher implements ActionListener  {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Object buttonPressed =	e.getSource();
+            if (buttonPressed.equals(m_start))
+            {
+                m_textArea.append("\nServer running...\nAwaiting client communication..");
+                
+                start();
+                m_frame.requestFocus();
+            }
+            if(buttonPressed.equals(m_stop))
+            {
+                for(Connection con : m_connections) {
+                    con.closeConnection();
+                    m_textArea.append("\nClosing connection");
+                }
+                close();
+            }
+        }
+    }
 }
 
+/**
+ * Connection class for a single client socket connection.
+ */
 class Connection extends Thread
 {
     private DataInputStream m_in;
@@ -102,93 +238,101 @@ class Connection extends Thread
     private Socket m_clientSock;
     private ServerDR m_server;
 
-
+    /**
+     * Constructor.
+     * @param sock Socket
+     * @param s Server
+     */
     public Connection(Socket sock,ServerDR s)
     {
         try
         {
-            System.out.println("connection");
+            m_textArea.append("\nServer connection: ");
             this.setName("ConnectionThread");
             m_clientSock = sock;
             m_in = new DataInputStream( m_clientSock.getInputStream());
             m_out = new DataOutputStream(m_clientSock.getOutputStream());
             m_server = s;
+
         }
         catch (IOException e)
         {
-            System.out.println("Connection : " + e);
+            m_textArea.append("\nConnection : " + e);
         }
     }
 
-    // extra
+    /**
+     * Write string message to output stream passing through filter first.
+     * Another method to send.
+     * @param mes string message
+     */
     public void send(String mes)
     {
         try {
-            System.out.println("Send");
+            //m_textArea.append("\nServer connection: Send: mes");
             m_out.writeUTF(interp(mes));
-
         }
         catch (IOException e)
         {
-            System.out.println("Error at server sending to client: "+e.getMessage());
+            m_textArea.append("\nError at server sending to client: "+e.getMessage());
         }
     }
 
+    public void closeConnection() {
+        try {
+            m_clientSock.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    /**
+     * Override start method with run to begin reading and writing to input and output stream.
+     * In a continuous loop while connection exists.
+     */
     @Override
     public void run()
     {
-        System.out.println("run connection serverDR");
+        m_textArea.append("\nServer: connection: Run");
         try
         {
-            while (true)
-            {
+            while(m_clientSock.isConnected()){
                 String mes = m_in.readUTF();
-
                 m_server.reply(interp(mes));
+                //m_textArea.append("\nServer run: m_in message: " + mes);
             }
         }
         catch (EOFException e)
         {
-            System.out.println("Run() EOF :" + e);
+            m_textArea.append("\nRun: EOF :" + e);
         }
         catch (IOException e)
         {
-            System.out.println("Run() IO :" + e);
-        }
-
-        finally
-        {
-            try
-            {
-                m_clientSock.close();
-                System.out.println("Server closing client socket");
-            }
-            catch( IOException e )
-            {
-                System.out.println("Close failed on client socket : " + e);
-            }
+            m_textArea.append("\nRun: IO :" + e);
         }
      }
-
-
 
     /**
      * Filter message for close/exit connection command
      * @param mes String message to pass to output or input stream
-     * @return Same message as in params no adjustment made
+     * @return Same message in params, no adjustment made
      */
-    private String interp(String mes)
-    {
-        System.out.println("Message from client:> "+ mes); //added
+    private String interp(String mes) {
+        //m_textArea.append("\nMessage from client:> "+ mes); //added
         if (mes.equals("exit") || mes.equals("Bye"))
         {
-            System.out.println("Closing client and server connections..");
-            m_server.close();
+            try {
+                m_textArea.append("\nClosing client and server connections..");
+                m_clientSock.close();
+                m_server.close();
+            }catch(Exception e){
+                m_textArea.append("\nError closing socket: "+e.getMessage());
+            }
         }
         if(mes.equals("Hello"))
         {
             send("Date: "+getDate() + ", Server IP address: " + getHostAddress());
         }
+
         return mes;
     }
 
@@ -207,7 +351,7 @@ class Connection extends Thread
         }
         catch (UnknownHostException e)
         {
-            System.out.println("Unable to resolve address: "+e);
+            m_textArea.append("\nUnable to resolve address: "+e);
             return "Error getting host address: " + e.getMessage();
         }
     }

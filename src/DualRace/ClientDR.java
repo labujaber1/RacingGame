@@ -1,57 +1,59 @@
 package DualRace;
 
-
+import DualRace.GamepanelDR;
 import java.io.*;
 import java.net.*;
 
 
 public class ClientDR extends Thread{
-    private int m_port;
-    private String m_serverName, m_receiveData,m_sendData;
+    private final int m_port;
+    private final String m_serverName;
     private Socket m_socket;
     private boolean m_connected;
     private DataOutputStream m_out;
     private DataInputStream m_in;
 
 
-
     /**
-     * New client.
+     * New client constructor.
      */
     public ClientDR(int port, String serverName)
     {
         m_port = port;
-        //m_port = 8888;
         m_serverName = serverName;
         m_socket = null;
         m_connected= false;
-        //m_timer = new Timer();
     }
 
+    /**
+     * Run connection: receiving and sending data while its open.
+     */
+    @Override
     public void run(){
-        ClientDR tcpClient = new ClientDR(m_port,m_serverName);
-        //if(m_serverName.equals(null)){m_serverName= m_ipaddress.getHostAddress();}
-        tcpClient.connect();
+        connect();
         try {
 
             do {
-                receiveData();
-                wait(200);
-                sendData(m_sendData);
-
-             } while (m_connected);
-        }catch(OutOfMemoryError e)
+                sendReceive();
+                //System.out.println("ClientDr sendReceive");
+                Thread.sleep(200);
+            } while (m_connected );
+        }catch(InterruptedException e)
         {
             System.out.println("Error with client server run -> "+e);
         }
-        catch(Exception e){
-            System.out.println("Error with client server run -> "+e);
+        finally
+        {
+            close();
+            System.out.println("Closing client run");
         }
         System.out.println("Exiting..");
-        tcpClient.close();
+
     }
+
+
     /**
-     * Connect to server.
+     * Create new socket connection.
      * @return
      */
     public boolean connect()
@@ -60,8 +62,11 @@ public class ClientDR extends Thread{
             return true;
         try
         {
-            m_socket = new Socket( m_serverName, m_port ); //error no socket
+            m_socket = new Socket(m_serverName, m_port);
+            m_out = new DataOutputStream(m_socket.getOutputStream());
+            m_in = new DataInputStream(m_socket.getInputStream());
             m_connected = true;
+            System.out.println("Connected to server: "+m_serverName+", port: "+m_port);
         }
         catch( UnknownHostException e)
         {
@@ -76,13 +81,16 @@ public class ClientDR extends Thread{
 
 
     /**
-     * Close connection.
+     * Close socket connection.
      */
     public void close()
     {
         try {
-            if (m_socket != null) {
+            if (m_socket != null)
+            {
                 m_socket.close();
+                m_out.close();
+                m_in.close();
                 m_connected = false;
             }
         }
@@ -92,41 +100,48 @@ public class ClientDR extends Thread{
         }
    }
 
-    public void sendData(String outgoing) {
+    /**
+     * Format outgoing string message to send to server via the data output stream
+     *
+     */
+    public void sendReceive() {
+        if (!m_connected) {
+            System.out.println("Not connected to server.");
+            return;
+        }
+        try {
+            //while (m_in.available()>0)
+            //{
+            String filterIn = m_in.readUTF();
+            //GamepanelDR.handleIncomingClientTraffic(m_in.readUTF());
 
-        try {
+            //m_receiveData = interp(filterIn);
             // send to server
-            if(outgoing != null) {
-                m_out = new DataOutputStream(m_socket.getOutputStream());
-                System.out.println("clientDR sendData 1");
-                m_out.writeUTF(outgoing);
-                System.out.println("clientDR sendData 2");
-                m_sendData = outgoing;
-                System.out.println("Sending to server = " + outgoing);
-            }
+            // format string to format for data output stream
+            //m_out.writeUTF(GamepanelDR.packController());
+            //m_sendData = outgoing;
+            System.out.println("Sending to server");
+            //}
+            //System.out.println("Out of while loop");
+        }
+        catch(EOFException e)
+        {
+            System.out.println("EOF sendData error: "+e);
+        }
+        catch (IOException e )
+        {
+            System.out.println("IO sendData error: "+e);
         }
         catch(Exception e)
         {
-            System.out.println("Error updating player: " + e.getMessage());
+            System.out.println("Error sending to server: " + e.getMessage());
         }
     }
-    public void receiveData()
-    {
-        try {
-            // receive data from server about other player status
-            m_in = new DataInputStream(m_socket.getInputStream());
-            String incoming = m_in.readUTF();
-            m_receiveData = incoming;
-            System.out.println("Receiving from server = " + incoming);
-        }
-        catch(Exception e)
-        {
-            System.out.println("Error updating other player: " + e.getMessage());
-        }
-    }
-    public String getRecDat()
-    {
-        return m_receiveData;
-    }
+
+
+
 
 }
+
+
+

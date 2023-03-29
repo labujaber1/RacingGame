@@ -1,14 +1,11 @@
 package DualRace;
 
-import CarAndMap.GamepanelCAM;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.IOException;
 
 /**
  * Title: Distributed multi-player racing game.
@@ -19,19 +16,19 @@ import java.io.IOException;
 public class MainframeDR extends JFrame implements KeyListener{
     private final JButton m_goBut, m_exitBut, m_connect, m_disconnect;
     private final GamepanelDR m_gp;
-    private JTextArea m_textarea;
-
-
+    private static JTextArea m_comms;
+    private static JTextArea m_textarea;
 
     /**
      * Create JFrame containing JPanels to display a racetrack and cars for users
      * to race each other from a single keyboard.
      * Contains button and key press listeners.
-     * @param title
+     * @param title Title provided in run method
      */
     public MainframeDR(String title) {
         super(title);
-        setSize(850, 650);
+        setSize(1150, 650);
+        setResizable(false);
         m_gp = new GamepanelDR();
         Container cp = this.getContentPane();
         cp.setLayout(new BorderLayout());
@@ -62,11 +59,26 @@ public class MainframeDR extends JFrame implements KeyListener{
         headingText.add(m_textarea,0);
 
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(1, 3));
+        buttonPanel.setLayout(new GridLayout(1, 4));
         buttonPanel.add(m_goBut);
         buttonPanel.add(m_connect);
         buttonPanel.add(m_disconnect);
         buttonPanel.add(m_exitBut);
+
+        JPanel textPanel = new JPanel(new BorderLayout(20,20));
+        textPanel.setPreferredSize(new Dimension(300,440));
+        textPanel.setBackground(Color.ORANGE);
+        m_comms = new JTextArea();
+        m_comms.append("Client server output display: \n");
+        m_comms.getPreferredScrollableViewportSize();
+        m_comms.setBackground(Color.lightGray);
+        m_comms.setLineWrap(false);
+        m_comms.setEditable(false);
+
+        JScrollPane m_sPane = new JScrollPane(m_comms);
+        m_sPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        m_sPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        textPanel.add(m_sPane,BorderLayout.CENTER); ///////
 
         m_gp.setBackground(Color.lightGray);
         m_gp.setVisible(true);
@@ -74,14 +86,19 @@ public class MainframeDR extends JFrame implements KeyListener{
         cp.add(buttonPanel, BorderLayout.SOUTH);
         cp.add(headingText,BorderLayout.NORTH);
         cp.add(m_gp, BorderLayout.CENTER);
+        cp.add(textPanel,BorderLayout.EAST);
         m_goBut.setFocusable(false);
-        m_gp.startAnimation(); //starts on open even if the go button not pressed
+        m_gp.startAnimation();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         addKeyListener(this);
         setFocusable(true);
         setVisible(true);
     }
 
+    public static void passToTextArea(String mes)
+    {
+        m_comms.append(mes);
+    }
     /**
      * Button listeners to start, select a car and exit game.
      */
@@ -103,23 +120,18 @@ public class MainframeDR extends JFrame implements KeyListener{
             {
                 m_connect.setEnabled(false);
                 m_disconnect.setEnabled(true);
-                try {
-                    m_gp.startClientServer();
-                } catch (IOException e) {
-                    System.out.println("Error starting client server: "+e.getMessage());
-                    throw new RuntimeException(e);
-                }
+                m_gp.checkConnect(true);
+                m_gp.startClientServer();
+                requestFocus(true);
+
             }
             if(buttonPressed.equals(m_disconnect))
             {
                 m_connect.setEnabled(true);
                 m_disconnect.setEnabled(false);
-                try {
-                    m_gp.stopClientServer();
-                } catch (IOException e) {
-                    System.out.println("Error closing client server: "+e.getMessage());
-                    throw new RuntimeException(e);
-                }
+                m_gp.checkConnect(false);
+                m_gp.stopClientServer();
+                requestFocus(true);
             }
             if(buttonPressed.equals(m_exitBut))
             {
@@ -137,28 +149,41 @@ public class MainframeDR extends JFrame implements KeyListener{
     public void keyPressed(KeyEvent e) {
         // TODO Auto-generated method stub
         // set speed from method in gamepanel
-        int speed = 2,greenC=1,policeC=2;
+        int speed = 2,greenC=1,policeC=2,player=m_gp.getPLayerNumber();
+        // allow online and offline two player
         int keyCode = e.getKeyCode();
         switch (keyCode) {
             case KeyEvent.VK_UP -> {
                 //P2 handle up move
-                System.out.println("P2 UP Key pressed: " + e.getKeyCode());
-                m_gp.setCarSpeed(speed,greenC);
+                m_comms.append("\nP2 UP Key pressed: " + e.getKeyCode());
+                if(!m_gp.canStartGame())
+                    m_gp.setCarSpeed(speed,greenC);
+                else
+                    m_gp.setCarSpeed(speed,player);
             }
             case KeyEvent.VK_DOWN -> {
                 //P2 handle down
-                System.out.println("P2 DOWN Key pressed: " + e.getKeyCode());
-                m_gp.setCarSpeed(-speed,greenC);
+                m_comms.append("\nP2 DOWN Key pressed: " + e.getKeyCode());
+                if(!m_gp.canStartGame())
+                    m_gp.setCarSpeed(-speed,greenC);
+                else
+                    m_gp.setCarSpeed(-speed,player);
             }
             case KeyEvent.VK_W -> {
                 //P1 handle up move
-                System.out.println("P1 UP Key pressed: " + e.getKeyCode());
-                m_gp.setCarSpeed(speed,policeC);
+                m_comms.append("\nP1 UP Key pressed: " + e.getKeyCode());
+                if(!m_gp.canStartGame())
+                    m_gp.setCarSpeed(speed,policeC);
+                else
+                    m_gp.setCarSpeed(speed,player);
             }
             case KeyEvent.VK_Z-> {
                 //P1 handle down
-                System.out.println("P1 DOWN Key pressed: " + e.getKeyCode());
-                m_gp.setCarSpeed(-speed,policeC);
+                m_comms.append("\nP1 DOWN Key pressed: " + e.getKeyCode());
+                if(!m_gp.canStartGame())
+                    m_gp.setCarSpeed(-speed,policeC);
+                else
+                    m_gp.setCarSpeed(-speed,player);
             }
         }
     }
@@ -171,26 +196,41 @@ public class MainframeDR extends JFrame implements KeyListener{
     public synchronized void keyReleased(KeyEvent arg0) {
         // TODO Auto-generated method stub
         int keyCode = arg0.getKeyCode();
+        // allow online and two layer offline function
+        int player = m_gp.getPLayerNumber();
+        boolean start = m_gp.canStartGame();
         switch (keyCode) {
             case KeyEvent.VK_LEFT -> {
                 //P2 handle left
-                System.out.println("P2 LEFT Key pressed: " + arg0.getKeyCode());
-                m_gp.greenLeft();
+                m_comms.append("\nP2 LEFT Key pressed: " + arg0.getKeyCode());
+                if(!m_gp.canStartGame())
+                    m_gp.greenLeft();
+                if(start && player == 1)
+                    m_gp.greenLeft();
             }
             case KeyEvent.VK_RIGHT -> {
                 //P2 handle right
-                System.out.println("P2 RIGHT Key pressed: " + arg0.getKeyCode());
-                m_gp.greenRight();
+                m_comms.append("\nP2 RIGHT Key pressed: " + arg0.getKeyCode());
+                if(!m_gp.canStartGame())
+                    m_gp.greenRight();
+                if(start && player == 1)
+                    m_gp.greenRight();
             }
             case KeyEvent.VK_A -> {
                 //P1 handle left
-                System.out.println("P1 LEFT Key pressed: " + arg0.getKeyCode());
-                m_gp.policeLeft();
+                m_comms.append("\nP1 LEFT Key pressed: " + arg0.getKeyCode());
+                if(!m_gp.canStartGame())
+                    m_gp.policeLeft();
+                if(start && player == 2)
+                    m_gp.policeLeft();
             }
             case KeyEvent.VK_D -> {
                 //P1 handle right
-                System.out.println("P1 RIGHT Key pressed: " + arg0.getKeyCode());
-                m_gp.policeRight();
+                m_comms.append("\nP1 RIGHT Key pressed: " + arg0.getKeyCode());
+                if(!m_gp.canStartGame())
+                    m_gp.policeRight();
+                if(start && player == 2)
+                    m_gp.policeRight();
             }
         }
     }

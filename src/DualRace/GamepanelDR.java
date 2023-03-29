@@ -7,9 +7,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
+import java.io.*;
+import java.net.Socket;
 import java.net.URL;
-import java.util.Objects;
+import java.net.UnknownHostException;
+import java.sql.SQLOutput;
+import DualRace.MainframeDR;
 
 /**
  * Title: Distributed multi-player racing game.
@@ -21,14 +24,15 @@ public class GamepanelDR extends JPanel {
 
     private BufferedImage m_crowd,m_cup,m_tree,m_wall,m_bush;
     private Timer animationTimer;
-    private ClientDR m_cdr = new ClientDR(getPortNumber(),serverIpAddress());
-    //private ImageIcon greenCarArr[], policeCarArr[];
+    private ClientDR m_cdr ;
     private BufferedImage greenCarArr[], policeCarArr[];
     private CarDR m_greenCar,m_policeCar;
-    private int m_trackChoice,m_player,m_portNumber;
+    private int m_trackChoice,m_player;
     private final SoundDR sound;
-    private Boolean m_go = false, m_canStart = false;
+    private Boolean m_go = false, m_canStart = false, m_connect=false;
     private String m_crashGreen, m_crashPolice, m_crashCars, m_cheer, m_countdown, m_ipAddress;
+    
+
 
     /**
      * Read in two sets of car images into arrays.
@@ -39,6 +43,7 @@ public class GamepanelDR extends JPanel {
         // select track
         m_trackChoice = chooseTrack();
 
+        
         // instantiate cars and image arrays
         greenCarArr = new BufferedImage[totalImages];
         policeCarArr = new BufferedImage[totalImages];
@@ -65,7 +70,7 @@ public class GamepanelDR extends JPanel {
             m_greenCar = new CarDR(4,365,30,0,0);
             m_policeCar = new CarDR(4,365,80,0,0);
         } catch (Exception e) {
-            System.out.println("car list error: " + e.getMessage());
+            sendToTextArea("\ncar list error: " + e.getMessage());
         }
     }
 
@@ -128,42 +133,106 @@ public class GamepanelDR extends JPanel {
             }
 
         } catch (Exception e) {
-            System.out.println("Error checking animation timer: " + e.getMessage());
+            sendToTextArea("\nError checking animation timer: " + e.getMessage());
         }
     }
 
-    public void runningComms() {
-        System.out.println("runningComms");
-        // do on separate thread
-        Thread commsThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                do{
-                    handleClientTraffic();
-                    m_cdr.sendData(packController());
-                } while(m_go ==true);
-            }});
-        commsThread.start();
-    }
     /**
-     * Get ip address and port number from the user via JOption pane
+     * Main function to start client server and process data called by connect button press.
+     *
+     */
+    public void startClientServer()  {
+        sendToTextArea("\nstartClientServer()");
+        m_cdr = new ClientDR(getPortNumber(),serverIpAddress());
+
+        // pack and unpack data
+        Thread updates = new Thread(() -> {
+            // start client server
+            m_cdr.start();
+            });
+        updates.start();
+
+        sendToTextArea("\nThis client is player "+m_player);
+   }
+
+    public void checkConnect(boolean ans)
+    {
+        m_connect = ans;
+    }
+
+    /**
+     * Read incoming data to either set player number, start game, or
+     * update non controller car data
+     */
+    public void handleIncomingClientTraffic(String incoming) {
+        //sendToTextArea("\nhandleClientTraffic");
+        if(incoming!=null) {
+            switch (incoming) {
+                case "1", "2" -> {
+                    setPlayer(incoming);
+                    // update player car status and player number
+                    if (m_player == 1) {
+                        sendToTextArea("\nYou are Player 1 controlling the green car");
+                        break;
+                    }
+                    if (m_player == 2) {
+                        sendToTextArea("\nYou are player 2 controlling the police car");
+                        break;
+                    }
+                    break;
+                }
+                case "Socket closed" -> {
+                    try {
+                        stopClientServer();
+                        break;
+                    } catch (Exception e) {
+                        sendToTextArea("\nGamepanelDR received Socket closed message from server. Error closing clientServer: " + e);
+                    }
+                }
+                case "GO" -> {
+                    m_canStart = true;
+                    break;
+                }
+                case "" -> {
+                    sendToTextArea("\nEmpty incoming message");
+                    break;
+                }
+                default -> {
+                    unpackNonController(incoming);
+                    break;
+                }
+            }
+        }
+        else
+        {
+            sendToTextArea("\nhandleClientTraffic finished empty incoming message");
+        }
+    }
+
+    /**
+     * Get ip address from the user via JOption pane
      */
     public String serverIpAddress()
     {
         String res = JOptionPane.showInputDialog("Enter an IP address","localhost");
-        if(res == null)
+        if(res == null || res.equals("2"))
         {
             System.exit(0);
         }
         return res;
     }
+
+    /**
+     * Retrieve port number from user for connection to server via JOption pane
+     * @return port number
+     */
     public int getPortNumber()
     {
         int ret = 0;
         while(ret == 0)
         {
-            String res = JOptionPane.showInputDialog("Enter a port number","8888");
-            if (res.isBlank() || res == "2" ) {
+            String res = JOptionPane.showInputDialog("Enter a port number","8887");
+            if (res.isBlank() || res.equals("2")) {
                 System.exit(0);
             }
             try
@@ -177,98 +246,78 @@ public class GamepanelDR extends JPanel {
         return ret;
     }
 
+    /**
+     * Set player number by first connection
+     * @param ply player number
+     */
     public void setPlayer(String ply)
     {
-        System.out.println("setPlayer");
+        sendToTextArea("\nsetPlayer");
         m_player= Integer.parseInt(ply);
-
-    }
-
-    public void startClientServer() throws IOException {
-        System.out.println("startClientServer()");
-        // start client
-        m_cdr.run();
-        System.out.println("This client is player "+m_player);
-        runningComms();
-
-    }
-
-    public void handleClientTraffic()
-    {
-        System.out.println("handleClientTraffic");
-        String incoming = m_cdr.getRecDat();
-        if(incoming!=null) {
-            if (incoming.equals("1") || incoming.equals("2")) {
-                setPlayer(incoming);
-            }
-            // update player car status and player number
-            if (m_player == 1) {
-                // assign as controller else non controller
-                System.out.println("Player 1 chosen");
-            }
-            if (m_player == 2) {
-                System.out.println("Ah crap I'm player 2");
-            }
-            if (incoming.equals("GO")) {
-                startGameConfirm();
-            } else {
-                unpackNonController(incoming);
-            }
-        }
-    }
-    public void stopClientServer() throws IOException
-    {
-        System.out.println("stopClientServer");
-        m_cdr.close();
-        m_go = false;
-
-    }
-
-    public void startGameConfirm()
-    {
-        System.out.println("startGameConfirm");
-        m_canStart = true;
-
-    }
-
-    public Boolean canStartGame()
-    {
-        System.out.println("canStartGame");
-        if(m_canStart==true){ return true; }
-        else { return false; }
-
     }
 
     /**
-     * Check received message:
-     * if single number then assign player the number
-     * else send to car class to set car data
+     * Get player number for game operator
+     * @return m_player
+     */
+    public int getPLayerNumber()
+    {
+        return m_player;
+    }
+
+    /**
+     * Close client server
+     */
+    public void stopClientServer()
+    {
+        sendToTextArea("\nstopClientServer");
+        m_cdr.close();
+        m_go = false;
+        m_connect = false;
+    }
+
+    /**
+     * Checks if start game set to true or false.
+     * @return m_canStart true or false
+     */
+    public Boolean canStartGame()
+    {
+        //sendToTextArea("\ncanStartGame");
+        return m_canStart;
+    }
+
+    /**
+     * Assign car data from other player to non controlled car
      * @param receivedCarData data received from the server
      */
     public void unpackNonController(String receivedCarData)  {
-        System.out.println("unpackNonController");
-        if(receivedCarData.length()==1 && receivedCarData.contains("1"))
-        {
-            m_player = 1;
+        //sendToTextArea("\nUpdating non controller: "+receivedCarData);
+        try{
+            if(m_player==1)
+                m_policeCar.setCarData(receivedCarData);
+
+            if(m_player==2)
+                m_greenCar.setCarData(receivedCarData);
         }
-        if(receivedCarData.length()==1 && receivedCarData.contains("2"))
+        catch (Exception e)
         {
-            m_player = 2;
+            sendToTextArea("\nCannot unpack non controller data: "+receivedCarData+".\n Error: "+e);
         }
-        if(receivedCarData.length()>2)
-        {
-            // change to non controller
-            m_greenCar.setCarData(receivedCarData);
-        }
-        System.out.println("Unpacking car data");
+        //sendToTextArea("\nUnpacking car data");
     }
 
+    /**
+     * Create string with controller car data to send to server and then other player
+     * @return controller car data
+     */
     public String packController()
     {
-        System.out.println("packController");
-        //  change to controller
-        String carDt = m_greenCar.getCurrentImage()+","+m_greenCar.getX()+","+m_greenCar.getY()+","+m_greenCar.getSpeed()+","+m_greenCar.getLap();
-        System.out.println("Packing car data to send gamepanel packcontroller");
+        String carDt="";
+        if(m_player==1)
+            carDt = m_greenCar.getCurrentImage()+","+m_greenCar.getX()+","+m_greenCar.getY()+","+m_greenCar.getSpeed()+","+m_greenCar.getLap();
+        if(m_player==2)
+            carDt = m_policeCar.getCurrentImage()+","+m_policeCar.getX()+","+m_policeCar.getY()+","+m_policeCar.getSpeed()+","+m_policeCar.getLap();
+        //sendToTextArea("\nSending to server: car data : "+carDt);
         return carDt;
     }
 
@@ -414,14 +463,14 @@ public class GamepanelDR extends JPanel {
         {
             sound.Play(m_crashGreen);
             m_greenCar.setSpeed(-m_greenCar.getSpeed() - m_greenCar.getSpeed());
-            System.out.println("Green car collided with the boundary");
+            sendToTextArea("\nGreen car collided with the boundary");
         }
         if(track.getInnerBounds().intersects( police.getBounds2D()) || !track.getOuterBounds().intersects(police.getBounds2D())
                 || track.getObstacleBounds().intersects(police.getBounds2D()))
         {
             sound.Play(m_crashPolice);
             m_policeCar.setSpeed(-m_policeCar.getSpeed() - m_policeCar.getSpeed());
-            System.out.println("Police car collided with the boundary");
+            sendToTextArea("\nPolice car collided with the boundary");
         }
 
         if(green.intersects(police) ||
@@ -431,7 +480,7 @@ public class GamepanelDR extends JPanel {
             sound.Play(m_crashCars);
             m_greenCar.setSpeed(-m_greenCar.getSpeed() - m_greenCar.getSpeed());
             m_policeCar.setSpeed(-m_policeCar.getSpeed() - m_policeCar.getSpeed());
-            System.out.println("Cars have collided.");
+            sendToTextArea("\nCars have collided.");
         }
     }
 
@@ -491,7 +540,130 @@ public class GamepanelDR extends JPanel {
         m_policeCar.setY(80);
         m_go = true;
     }
+    
+    public static void sendToTextArea(String mes)
+    {
+        MainframeDR.passToTextArea(mes);
+    }
+    private class ClientDR extends Thread{
+        private final int m_port;
+        private final String m_serverName;
+        private Socket m_socket;
+        private boolean m_connected;
+        private DataOutputStream m_out;
+        private DataInputStream m_in;
+
+        /**
+         * New client constructor.
+         */
+        public ClientDR(int port, String serverName)
+        {
+            m_port = port;
+            m_serverName = serverName;
+            m_socket = null;
+            m_connected= false;
+        }
+
+        /**
+         * Run connection: receiving and sending data while its open.
+         */
+        @Override
+        public void run(){
+            connect();
+            try {
+              do {
+                    sendReceive();
+                } while (m_connected );
+            }catch (Exception e)
+            {
+                sendToTextArea("\nError with client server run -> "+e);
+            }
+            finally
+            {
+                close();
+                sendToTextArea("\nClosing client run");
+            }
+            sendToTextArea("\nExiting..");
+        }
 
 
+        /**
+         * Create new socket connection.
+         * @return new socket connected tag
+         */
+        public boolean connect()
+        {
+            if (m_connected)
+                return true;
+            try
+            {
+                m_socket = new Socket(m_serverName, m_port);
+                m_out = new DataOutputStream(m_socket.getOutputStream());
+                m_in = new DataInputStream(m_socket.getInputStream());
+                m_connected = true;
+                sendToTextArea("\nConnected to server: "+m_serverName+", port: "+m_port);
+            }
+            catch( UnknownHostException e)
+            {
+                sendToTextArea("\nSock error in connect method clientDR: " + e);
+            }
+            catch( IOException e)
+            {
+                sendToTextArea("\nIO error in connect method clientDR: " + e);
+            }
+            return m_connected;
+        }
+
+
+        /**
+         * Close socket connection.
+         */
+        public void close()
+        {
+            try {
+                if (m_socket != null)
+                {
+                    m_socket.close();
+                    m_out.close();
+                    m_in.close();
+                    m_connected = false;
+                }
+            }
+            catch (IOException e)
+            {
+                sendToTextArea("\nError closing connection: "+e.getMessage());
+            }
+        }
+
+        /**
+         * Format outgoing string message to send to server via the data output stream
+         *
+         */
+        public void sendReceive() {
+            if (!m_connected) {
+                sendToTextArea("\nNot connected to server.");
+                return;
+            }
+            try {
+                String incom = m_in.readUTF();
+                handleIncomingClientTraffic(incom);
+                m_out.writeUTF(packController());
+                //sendToTextArea("\nSending to server");
+            }
+            catch(EOFException e)
+            {
+                sendToTextArea("\nEOF sendData error: "+e);
+            }
+            catch (IOException e )
+            {
+                sendToTextArea("\nIO sendData error: "+e);
+            }
+            catch(Exception e)
+            {
+                sendToTextArea("\nError sending to server: " + e.getMessage());
+            }
+        }
+
+    }
 
 }
