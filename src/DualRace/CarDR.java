@@ -8,6 +8,7 @@ package DualRace;
 
 import java.awt.*;
 import java.awt.geom.*;
+import java.io.Serializable;
 
 /**
  * Title: Distributed multi-player racing game.
@@ -15,18 +16,21 @@ import java.awt.geom.*;
  * @author labuj 2018481
  * Description: Two player car race game using client server setup.
  */
-public class CarDR {
+public class CarDR implements Serializable{
+    private static final long serialVersionUID = -5208728886913377954L;
 
     private double m_x, m_y,m_lap;
-    private int m_speed,m_currentImageIndex,maxSpeed = 20,maxNegSpeed = -20,maxImage=16;
-    public CarDR(int currentImageIndex, double x, double y, int speed, double lap) {
+    private int m_playerNum,m_speed,m_currentImageIndex,maxSpeed = 20,maxNegSpeed = -20,maxImage=16;
+    public CarDR(int playerNum,int currentImageIndex, double x, double y, int speed, double lap) {
+        m_playerNum = playerNum;
         m_currentImageIndex = currentImageIndex;
         m_x = x;
         m_y = y;
         m_speed = speed;
         m_lap = lap;
     }
-
+    public int getPlayerNum(){return m_playerNum;}
+    public void setPlayerNum(int value){m_playerNum = value;}
     public int getCurrentImage() { return m_currentImageIndex; }
     public void setCurrentImage(int value) { m_currentImageIndex = value; }
     public double getX() {
@@ -51,22 +55,18 @@ public class CarDR {
      * Create a boundary for each car and rotate according the image displayed.
      * Called by the checkCollision method in Gamepanel.
      *
-     * @return rotated affineTransformed shape
+     * @return rectangle
      */
     public Rectangle2D getCarBoundary(Graphics g)
     {
         Graphics2D g2d = (Graphics2D) g;
-        //Rectangle2D r = new Rectangle2D.Double((m_x)+7,(m_y)+17,34,15);
         Rectangle2D r = new Rectangle2D.Double(m_x+13,m_y+13,22,22);
         // calc angle from 0 degrees not from previous position and rotate
         double angle = (m_currentImageIndex-4) * 22.5;
         AffineTransform af = new AffineTransform();
-
         af.rotate(Math.toRadians(angle),r.getCenterX(),r.getCenterY());
         // Test check where boundary is by drawing and compare with collision getBounds2D method.
-        //g2d.draw(af.createTransformedShape(r));
-        //return af.createTransformedShape(r);
-
+        //g2d.draw(af.createTransformedShape(r)); //testing
         return r;
      }
 
@@ -125,11 +125,14 @@ public class CarDR {
     public void setCarData(String data)
     {
         String[] carData = data.split(",");
-        setCurrentImage(Integer.parseInt(carData[0]));
-        setX(Double.parseDouble(carData[1]));
-        setY(Double.parseDouble(carData[2]));
-        setSpeed(Integer.parseInt(carData[3]));
-        setLap(Double.parseDouble(carData[4]));
+        if (carData[0].equals(m_playerNum)) {
+            //setPlayerNum(Integer.parseInt(carData[0]));
+            setCurrentImage(Integer.parseInt(carData[1]));
+            setX(Double.parseDouble(carData[2]));
+            setY(Double.parseDouble(carData[3]));
+            setSpeed(Integer.parseInt(carData[4]));
+            setLap(Double.parseDouble(carData[5]));
+        }
     }
 }
 

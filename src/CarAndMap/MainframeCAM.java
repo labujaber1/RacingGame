@@ -11,7 +11,7 @@ import java.awt.event.*;
  * Description: Two player car race game operating from the same keyboard.
  */
 public class MainframeCAM extends JFrame implements KeyListener{
-    private final JButton m_goBut, m_exitBut,m_greenBut,m_policeBut;
+    private final JButton m_goBut, m_exitBut;
     private final GamepanelCAM m_gp;
     private JTextArea m_textarea;
 
@@ -32,17 +32,11 @@ public class MainframeCAM extends JFrame implements KeyListener{
         // buttons and text area set
         m_goBut = new JButton("GO");
         m_exitBut = new JButton("EXIT");
-        m_greenBut = new JButton("Select the Green car");
-        m_policeBut = new JButton("or Police car to drive");
         m_goBut.setEnabled(true);
-        m_greenBut.setEnabled(true);
-        m_policeBut.setEnabled(true);
         m_goBut.setBackground(Color.GREEN);
         m_exitBut.setBackground(Color.gray);
         m_goBut.addActionListener(new ButtonWatcher());
         m_exitBut.addActionListener(new ButtonWatcher());
-        m_greenBut.addActionListener(new ButtonWatcher());
-        m_policeBut.addActionListener(new ButtonWatcher());
 
         m_textarea = new JTextArea("Hi and welcome to this super duper racing game -> Use directional keys to operate the green car and" +
                 " \nWADZ keys for the police car. Practice first, select car button when ready and press GO to start the race");
@@ -58,9 +52,7 @@ public class MainframeCAM extends JFrame implements KeyListener{
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(1, 3));
         buttonPanel.add(m_goBut);
-        buttonPanel.add(m_greenBut);
-        buttonPanel.add(m_policeBut);
-        buttonPanel.add(m_exitBut);
+       buttonPanel.add(m_exitBut);
 
         m_gp.setBackground(Color.lightGray);
         m_gp.setVisible(true);
@@ -93,24 +85,7 @@ public class MainframeCAM extends JFrame implements KeyListener{
             {
                System.exit(0);
             }
-            if(buttonPressed.equals(m_greenBut))
-            {
-                m_greenBut.setBackground(Color.green);
-                m_policeBut.setEnabled(false);
-                m_policeBut.setBackground(Color.gray);
-                m_gp.setVisible(true);
-                // grey out or box other car and make inactive to user
-                // operate by other user
-            }
-            if(buttonPressed.equals(m_policeBut))
-            {
-                m_policeBut.setBackground(Color.green);
-                m_greenBut.setEnabled(false);
-                m_greenBut.setBackground(Color.gray);
-                m_gp.setVisible(true);
-                // grey out or box other car and make inactive to user
-                // operate by other user
-            }
+
         }
     }
 

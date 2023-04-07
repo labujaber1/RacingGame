@@ -6,12 +6,14 @@
  */
 package DualRace;
 
-import java.io.IOException;
-
+/**
+ * Main method to start Mainframe.
+ */
 public class RungameDR {
 
     public static void main(String[] args)  {
-        MainframeDR mf = new MainframeDR("A car and map racing game");
+
+        MainframeDR mf1 = new MainframeDR("A car and map racing game");
 
     }
 }

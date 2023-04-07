@@ -16,6 +16,9 @@ import javax.swing.Timer;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
+/**
+ * Game panel extends JPanel contains methods to display the spinning cars.
+ */
 public class GamepanelCS extends JPanel {
 
     private BufferedImage m_imageR, m_imageP;

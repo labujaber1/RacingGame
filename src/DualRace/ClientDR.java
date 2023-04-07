@@ -110,19 +110,8 @@ public class ClientDR extends Thread{
             return;
         }
         try {
-            //while (m_in.available()>0)
-            //{
             String filterIn = m_in.readUTF();
-            //GamepanelDR.handleIncomingClientTraffic(m_in.readUTF());
-
-            //m_receiveData = interp(filterIn);
-            // send to server
-            // format string to format for data output stream
-            //m_out.writeUTF(GamepanelDR.packController());
-            //m_sendData = outgoing;
             System.out.println("Sending to server");
-            //}
-            //System.out.println("Out of while loop");
         }
         catch(EOFException e)
         {

@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="RacingGame:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/RacingGame_jar</output-path>
+    <root id="archive" name="RacingGame.jar">
+      <element id="module-output" name="RacingGame" />
+      <element id="dir-copy" path="$PROJECT_DIR$/src/Sounds" />
+      <element id="dir-copy" path="$PROJECT_DIR$/src/Images" />
+      <element id="dir-copy" path="$PROJECT_DIR$/resources" />
+    </root>
+  </artifact>
+</component>

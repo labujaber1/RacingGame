@@ -11,8 +11,6 @@ import java.io.*;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.sql.SQLOutput;
-import DualRace.MainframeDR;
 
 /**
  * Title: Distributed multi-player racing game.
@@ -47,6 +45,7 @@ public class GamepanelDR extends JPanel {
         // instantiate cars and image arrays
         greenCarArr = new BufferedImage[totalImages];
         policeCarArr = new BufferedImage[totalImages];
+
         m_crashGreen = ("Sounds/fast-collision.wav");
         m_crashPolice = ("Sounds/clank-car-crash.wav");
         m_crashCars = ("Sounds/squish.wav");
@@ -67,8 +66,8 @@ public class GamepanelDR extends JPanel {
             m_tree = getImage("/tree1.jpg");
             m_wall = getImage("/wall1.jpg");
             m_bush = getImage("/bush1.jpg");
-            m_greenCar = new CarDR(4,365,30,0,0);
-            m_policeCar = new CarDR(4,365,80,0,0);
+            m_greenCar = new CarDR(0,4,365,30,0,0);
+            m_policeCar = new CarDR(0,4,365,80,0,0);
         } catch (Exception e) {
             sendToTextArea("\ncar list error: " + e.getMessage());
         }
@@ -133,7 +132,8 @@ public class GamepanelDR extends JPanel {
             }
 
         } catch (Exception e) {
-            sendToTextArea("\nError checking animation timer: " + e.getMessage());
+            startAnimation();
+            sendToTextArea("\nError with animation timer when moving and checking collision with cars: " + e);
         }
     }
 
@@ -141,18 +141,26 @@ public class GamepanelDR extends JPanel {
      * Main function to start client server and process data called by connect button press.
      *
      */
-    public void startClientServer()  {
+    public void startClientServer() {
         sendToTextArea("\nstartClientServer()");
-        m_cdr = new ClientDR(getPortNumber(),serverIpAddress());
+        m_cdr = new ClientDR(getPortNumber(), serverIpAddress());
+        //Thread updates = new Thread(() -> {
+        // start client server
+        m_cdr.start();
+        //});
+        //updates.start();
 
-        // pack and unpack data
-        Thread updates = new Thread(() -> {
-            // start client server
-            m_cdr.start();
-            });
-        updates.start();
-
-        sendToTextArea("\nThis client is player "+m_player);
+        sendToTextArea("\nThis client is player " + m_player);
+        if (m_player == 1)
+        {
+            m_greenCar.setPlayerNum(1);
+            m_policeCar.setPlayerNum(2);
+        }
+        if (m_player == 2)
+        {
+            m_policeCar.setPlayerNum(1);
+            m_greenCar.setPlayerNum(2);
+        }
    }
 
     public void checkConnect(boolean ans)
@@ -277,7 +285,7 @@ public class GamepanelDR extends JPanel {
     }
 
     /**
-     * Checks if start game set to true or false.
+     * Checks if start game set to true or false. Can only start race if 2 players are connected.
      * @return m_canStart true or false
      */
     public Boolean canStartGame()
@@ -312,11 +320,11 @@ public class GamepanelDR extends JPanel {
      */
     public String packController()
     {
-        String carDt="";
+        var carDt="";
         if(m_player==1)
-            carDt = m_greenCar.getCurrentImage()+","+m_greenCar.getX()+","+m_greenCar.getY()+","+m_greenCar.getSpeed()+","+m_greenCar.getLap();
+            carDt = m_greenCar.getPlayerNum()+","+m_greenCar.getCurrentImage()+","+m_greenCar.getX()+","+m_greenCar.getY()+","+m_greenCar.getSpeed()+","+m_greenCar.getLap();
         if(m_player==2)
-            carDt = m_policeCar.getCurrentImage()+","+m_policeCar.getX()+","+m_policeCar.getY()+","+m_policeCar.getSpeed()+","+m_policeCar.getLap();
+            carDt = m_policeCar.getPlayerNum()+","+m_policeCar.getCurrentImage()+","+m_policeCar.getX()+","+m_policeCar.getY()+","+m_policeCar.getSpeed()+","+m_policeCar.getLap();
         //sendToTextArea("\nSending to server: car data : "+carDt);
         return carDt;
     }
@@ -428,6 +436,7 @@ public class GamepanelDR extends JPanel {
         URL url;                    // URL of image
         // Get full path
         name = "/Images/" + name;
+        //System.out.println(this.getClass().getResource(name));
         // Get resource URL of image
         url = this.getClass().getResource(name);
         if (url == null) {
@@ -461,13 +470,16 @@ public class GamepanelDR extends JPanel {
         if(track.getInnerBounds().intersects(green.getBounds2D()) || !track.getOuterBounds().intersects(green.getBounds2D())
          || track.getObstacleBounds().intersects(green.getBounds2D()))
         {
+
             sound.Play(m_crashGreen);
+
             m_greenCar.setSpeed(-m_greenCar.getSpeed() - m_greenCar.getSpeed());
             sendToTextArea("\nGreen car collided with the boundary");
         }
         if(track.getInnerBounds().intersects( police.getBounds2D()) || !track.getOuterBounds().intersects(police.getBounds2D())
                 || track.getObstacleBounds().intersects(police.getBounds2D()))
         {
+
             sound.Play(m_crashPolice);
             m_policeCar.setSpeed(-m_policeCar.getSpeed() - m_policeCar.getSpeed());
             sendToTextArea("\nPolice car collided with the boundary");
@@ -496,8 +508,8 @@ public class GamepanelDR extends JPanel {
         Shape green =  m_greenCar.getCarBoundary(g);
         Shape police =  m_policeCar.getCarBoundary(g);
 
-        g2d.draw(r1);
-        g2d.draw(r2);
+        //g2d.draw(r1); //testing
+        //g2d.draw(r2); //testing
         g2d.dispose();
         if (green.intersects(r1) && m_greenCar.getLap()%2==1) {
             m_greenCar.setLap(3);
@@ -545,6 +557,10 @@ public class GamepanelDR extends JPanel {
     {
         MainframeDR.passToTextArea(mes);
     }
+
+    /**
+     * Internal class for client server
+     */
     private class ClientDR extends Thread{
         private final int m_port;
         private final String m_serverName;
@@ -588,7 +604,7 @@ public class GamepanelDR extends JPanel {
 
 
         /**
-         * Create new socket connection.
+         * Create new client socket connection.
          * @return new socket connected tag
          */
         public boolean connect()

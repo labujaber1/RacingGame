@@ -10,6 +10,10 @@ import java.net.URL;
  * @author labuj 2018481
  * Description: Two player car race game using client server setup.
  */
+
+/**
+ * Plays audio clips passed in params when called from gamepanel.
+ */
 public class SoundDR {
     private URL m_url;
     private AudioInputStream m_audioIn;
@@ -24,19 +28,24 @@ public class SoundDR {
     public void Play(String filename){
         try {
             m_url = this.getClass().getClassLoader().getResource(filename);
-            m_audioIn = AudioSystem.getAudioInputStream(m_url);
-            m_clip = AudioSystem.getClip();
-            m_clip.open(m_audioIn);
-            m_clip.addLineListener(new LineListener() {
-                @Override
-                public void update(LineEvent event) {
-                    if(event.getType() == LineEvent.Type.STOP)
-                        m_clip.close();
-                }
+            if(m_url != null) {
+                m_audioIn = AudioSystem.getAudioInputStream(m_url);
+                m_clip = AudioSystem.getClip();
+                m_clip.open(m_audioIn);
+                m_clip.addLineListener(new LineListener() {
+                    @Override
+                    public void update(LineEvent event) {
+                        if (event.getType() == LineEvent.Type.STOP)
+                            m_clip.close();
+                    }
 
-            });
-            m_audioIn.close();
-            m_clip.start();
+                });
+                m_audioIn.close();
+                m_clip.start();
+            }
+            else {
+                System.out.println("Cannot find sound file");
+            }
         }catch (IOException | LineUnavailableException | UnsupportedAudioFileException ex){
             System.err.println("Error reading file: "+ ex.getMessage());
         }

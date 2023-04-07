@@ -9,6 +9,9 @@
 
 package CarSpin;
 
+/**
+ * Run car spinning display instantiates new mainframe.
+ */
 public class RungameCS {
     /**
      * Start game by creating a new JFrame.

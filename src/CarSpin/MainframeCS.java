@@ -19,6 +19,9 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+/**
+ * Main frame creates JFrame and keylisteners.
+ */
 public class MainframeCS extends JFrame implements KeyListener{
     private JButton m_go, m_stop;
     private GamepanelCS m_gp;

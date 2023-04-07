@@ -12,6 +12,10 @@ import java.awt.image.BufferedImage;
  * @author labuj 2018481
  * Description: Two player car race game using client server setup.
  */
+
+/**
+ * Draws 2 different tracks, track boundaries, and obstacles.
+ */
 public class TrackDR {
 
     private int m_trackId, m_trackWidth, m_trackHeight;
@@ -21,7 +25,6 @@ public class TrackDR {
     private Ellipse2D.Double outerBoundsEllip;
     private Ellipse2D.Double innerBoundsEllip;
     private Rectangle2D.Double obstacleBound;
-    private BufferedImage im;
 
     /**
      * Racetrack constructor

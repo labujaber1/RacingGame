@@ -100,7 +100,7 @@ public class MainframeDR extends JFrame implements KeyListener{
         m_comms.append(mes);
     }
     /**
-     * Button listeners to start, select a car and exit game.
+     * Button listeners to start race, connect and disconnect to server, and exit game.
      */
     private class ButtonWatcher implements ActionListener
     {
