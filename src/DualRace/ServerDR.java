@@ -91,7 +91,8 @@ public class ServerDR extends Thread {
     /**
      * ActionListener for start and stop server buttons.
      */
-    private class ButtonWatcher implements ActionListener  {
+    private class ButtonWatcher implements ActionListener
+    {
         @Override
         public void actionPerformed(ActionEvent e) {
             Object buttonPressed =	e.getSource();
@@ -172,11 +173,13 @@ public class ServerDR extends Thread {
         sendToTextArea("server: check connection..");
         int i=0;
         for(Connection c : m_connections){
-            if (!c.isAlive()){
+            if (!c.isAlive())
+            {
                 i= m_connections.indexOf(c);
                 sendToTextArea("CheckConnection: Dead connection : "+c+"in connections list has been removed.");
             }
-            if(c.isAlive()){
+            if(c.isAlive())
+            {
                 i=m_connections.indexOf(c);
                 sendToTextArea("Checkconnection: Is alive : " +c);
             }
@@ -193,30 +196,24 @@ public class ServerDR extends Thread {
         //String test = player2TestData();
         //sendToTextArea("Car data: "+mes);
         // passing on received message, if data from player1 send conn 2: arraylist index 1
-        if (mes.startsWith("1") && mes.length()>1) {
+        if (mes.startsWith("1") && mes.length()>1)
+        {
             m_connections.get(1).send(mes);
-            sendToTextArea("Car data: "+mes); }
+            //sendToTextArea("Car data: "+mes);
+        }
         // passing on received message, if data from player2 send comm 1: arraylist index 0
-        else if (mes.startsWith("2") && mes.length()>1){
+        else if (mes.startsWith("2") && mes.length()>1)
+        {
             m_connections.get(0).send(mes);
-            sendToTextArea("Car data: "+mes);}
-        /* why receive player status should only be sent by server?
-        // first connected message assigning player status
-        else if (mes.equals("1")) {
-            m_connections.get(0).send(mes);
-            sendToTextArea("Player: "+mes);}
-        // first connected message assigning player status
-        else if (mes.equals("2")) {
-            m_connections.get(1).send(mes);
-            sendToTextArea("Player: "+mes);}
-
-         */
+            //sendToTextArea("Car data: "+mes);
+        }
         // drop packet if player status not assigned to client by server otherwise send
-        else if (!mes.startsWith("0")) {
+        else if (!mes.startsWith("0"))
+        {
             for (Connection con : m_connections) {
                 con.send(mes);
-                sendToTextArea("!0 data: "+mes);
-                //con.send(test); ///////////////////////// testing
+                //sendToTextArea("!0 data: "+mes);
+                //con.send(test); ///////////////////////// for testing
                 //sendToTextArea("server reply: "+test);
             }
         }
@@ -266,9 +263,7 @@ public class ServerDR extends Thread {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
-
 }
 
 /**
@@ -299,7 +294,6 @@ class Connection extends Thread
     {
         try
         {
-            sendToTextArea("Server connection: ");
             this.setName("ConnectionThread");
             m_clientSock = sock;
             m_in = new DataInputStream( m_clientSock.getInputStream());
@@ -331,7 +325,8 @@ class Connection extends Thread
     /**
      * Close socket.
      */
-    public void closeConnection() {
+    public void closeConnection()
+    {
         try {
             m_clientSock.close();
         } catch (IOException e) {
@@ -345,10 +340,8 @@ class Connection extends Thread
     @Override
     public void run()
     {
-        sendToTextArea("Server: connection: Run");
         try
         {
-
             while(m_clientSock.isConnected()){
                 String mes = m_in.readUTF();
                 m_server.reply(interp(mes));
@@ -374,7 +367,8 @@ class Connection extends Thread
      * @param mes String message to pass to output or input stream
      * @return Same message in params, no adjustment made
      */
-    private String interp(String mes) {
+    private String interp(String mes)
+    {
         if (mes.equals("exit") || mes.equals("close"))
         {
             try {
@@ -384,33 +378,6 @@ class Connection extends Thread
                 sendToTextArea("Error closing socket: "+e.getMessage());
             }
         }
-        /*
-        if(mes.equals("Hello"))
-        {
-            send("Date: "+getDate() + ", Server IP address: " + getHostAddress());
-        }
-        */
         return mes;
     }
-/*
-    // add date to initial connection setup
-    public String getDate(){
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-        LocalDateTime ldt = LocalDateTime.now();
-        return dtf.format(ldt);
-    }
-
-    public String getHostAddress()
-    {
-        try {
-            InetAddress host = InetAddress.getLocalHost();
-            return host.getHostAddress();
-        }
-        catch (UnknownHostException e)
-        {
-            sendToTextArea("Unable to resolve address: "+e);
-            return "Error getting host address: " + e.getMessage();
-        }
-    }
-*/
 }

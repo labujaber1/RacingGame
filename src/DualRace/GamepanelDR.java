@@ -7,8 +7,6 @@
  */
 package DualRace;
 
-import com.sun.tools.javac.Main;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -45,7 +43,8 @@ public class GamepanelDR extends JPanel {
     /**
      * Read in two sets of car images into arrays.
      */
-    public GamepanelDR() {
+    public GamepanelDR()
+    {
         int totalImages = 16;
         sound = new SoundDR();
         // select track
@@ -88,7 +87,8 @@ public class GamepanelDR extends JPanel {
      * checkCollision if animation is running.
      * @param g the <code>Graphics</code> object to protect
      */
-    public void paintComponent(Graphics g) {
+    public void paintComponent(Graphics g)
+    {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         TrackDR m_track = new TrackDR(m_trackChoice, 800, 600);
@@ -105,6 +105,7 @@ public class GamepanelDR extends JPanel {
             m_track.drawObstacle(g,m_bush,120,300,0,0);
             m_track.drawObstacle(g,m_wall,590,460,0,0);
         } else {System.exit(0);}
+
         // centre lap, speed display and start countdown
         g2d.setColor(Color.white);
         g2d.setFont(new Font("MV Boli", Font.BOLD, 20));
@@ -131,6 +132,10 @@ public class GamepanelDR extends JPanel {
             sound.Play(m_cheer);
             stopAnimation();
         }
+        if(m_canSendRaceData)
+        {
+            m_cdr.sendReceiveTCP();
+        }
         try {
             if (animationTimer.isRunning()) {
                 // move image and calc turn of car
@@ -141,10 +146,6 @@ public class GamepanelDR extends JPanel {
                 checkCarCollision(g, m_track);
                 // update lap count
                 lapCount(g);
-                //if(m_canSendRaceData)
-                //{
-                    //m_cdr.sendReceiveUDP();
-                //}
             }
         } catch (Exception e) {
             startAnimation();
@@ -173,7 +174,8 @@ public class GamepanelDR extends JPanel {
      * Read incoming data to either set player number, start game, or
      * update non controller car data
      */
-    public void handleIncomingClientTraffic(String incoming) {
+    public void handleIncomingClientTraffic(String incoming)
+    {
         if(incoming!=null) {
             switch (incoming) {
                 case "1", "2" -> {
@@ -282,7 +284,8 @@ public class GamepanelDR extends JPanel {
     /**
      * Close client server
      */
-    public void stopClientServer() {
+    public void stopClientServer()
+    {
         sendToTextArea("stopClientServer");
         try {
             m_cdr.m_out.writeUTF("Stopping client server");
@@ -307,7 +310,8 @@ public class GamepanelDR extends JPanel {
      * Assign car data from other player to non controlled car
      * @param receivedCarData data received from the server
      */
-    public void unpackNonController(String receivedCarData)  {
+    public void unpackNonController(String receivedCarData)
+    {
        try{
             if(m_player==1 && receivedCarData.startsWith("2"))
                 m_policeCar.setCarData(receivedCarData);
@@ -354,10 +358,12 @@ public class GamepanelDR extends JPanel {
     public void startAnimation()
     {
         int animation_delay = 100;
-        if (animationTimer == null) {
+        if (animationTimer == null)
+        {
             animationTimer = new Timer(animation_delay, new TimerHandler());
             animationTimer.start();
-        } else {
+        } else
+        {
             if (!animationTimer.isRunning()) {
                 animationTimer.restart();
             }
@@ -367,7 +373,8 @@ public class GamepanelDR extends JPanel {
     /**
      * Stop animation to use in a car collision and end the game.
      */
-    public void stopAnimation() {
+    public void stopAnimation()
+    {
         animationTimer.stop();
     }
 
@@ -375,7 +382,8 @@ public class GamepanelDR extends JPanel {
      * Refresh screen using repaint method after each execution of the timer.
      * Timer delay set globally for 100 milliseconds.
      */
-    private class TimerHandler implements ActionListener {
+    private class TimerHandler implements ActionListener
+    {
         public void actionPerformed(ActionEvent actionEvent) {
             repaint();
         }
@@ -386,7 +394,8 @@ public class GamepanelDR extends JPanel {
      * @param carSpeed - speed of car in integer
      * @param carId - id of car in integer
      */
-    public void setCarSpeed(int carSpeed,int carId){
+    public void setCarSpeed(int carSpeed,int carId)
+    {
         if(carId == 1) {
             m_greenCar.setSpeed(carSpeed);
         }
@@ -398,28 +407,32 @@ public class GamepanelDR extends JPanel {
     /**
      * Change green car current image by positive one
      */
-    public void greenRight(){
+    public void greenRight()
+    {
         m_greenCar.rotateRight();
     }
 
     /**
      * Change green car current image by negative one.
      */
-    public void greenLeft(){
+    public void greenLeft()
+    {
         m_greenCar.rotateLeft();
     }
 
     /**
      * Change police car current image by positive one.
      */
-    public void policeRight(){
+    public void policeRight()
+    {
         m_policeCar.rotateRight();
     }
 
     /**
      * Change police car current image by negative one.
      */
-    public void policeLeft(){
+    public void policeLeft()
+    {
         m_policeCar.rotateLeft();
     }
 
@@ -476,21 +489,17 @@ public class GamepanelDR extends JPanel {
         if(track.getInnerBounds().intersects(green.getBounds2D()) || !track.getOuterBounds().intersects(green.getBounds2D())
          || track.getObstacleBounds().intersects(green.getBounds2D()))
         {
-
             sound.Play(m_crashGreen);
-
             m_greenCar.setSpeed(-m_greenCar.getSpeed() - m_greenCar.getSpeed());
             sendToTextArea("Green car collided with the boundary");
         }
         if(track.getInnerBounds().intersects( police.getBounds2D()) || !track.getOuterBounds().intersects(police.getBounds2D())
                 || track.getObstacleBounds().intersects(police.getBounds2D()))
         {
-
             sound.Play(m_crashPolice);
             m_policeCar.setSpeed(-m_policeCar.getSpeed() - m_policeCar.getSpeed());
             sendToTextArea("Police car collided with the boundary");
         }
-
         if(green.intersects(police) ||
                 police.intersects(green))
         // if statement to check if pixel visible or not within getbounds rectangle not affinetransformed shape
@@ -553,7 +562,6 @@ public class GamepanelDR extends JPanel {
      */
     public void resetAllCars()
     {
-
         m_greenCar.resetCars();
         m_policeCar.resetCars();
         m_policeCar.setY(80);
@@ -603,10 +611,10 @@ public class GamepanelDR extends JPanel {
             connect();
             try {
               do {
-                  //if(!m_canSendRaceData) {
+                  if(!m_canSendRaceData)
+                  {
                       sendReceiveTCP();
-                  //}
-
+                  }
                 } while (m_connected);
             }catch (Exception e)
             {
@@ -634,7 +642,6 @@ public class GamepanelDR extends JPanel {
                 m_socket = new Socket(m_serverName, m_port);
                 m_out = new DataOutputStream(m_socket.getOutputStream());
                 m_in = new DataInputStream(m_socket.getInputStream());
-                //m_outUDP = new
                 m_connected = true;
                 sendToTextArea("Connected to server: "+m_serverName+", port: "+m_port);
             }
@@ -687,7 +694,6 @@ public class GamepanelDR extends JPanel {
                 if(!incoming.isEmpty())
                 {
                     handleIncomingClientTraffic(incoming);
-                    sendToTextArea("Incoming data: " + incoming);
                 }
                 // when race starts send controllers data
                 if(m_canSendRaceData)

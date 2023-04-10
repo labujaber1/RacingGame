@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Objects;
 
 
 /**
@@ -108,7 +109,7 @@ public class MainframeDR extends JFrame implements KeyListener{
     {
         m_comms.append("\n"+mes);
         // blank out go button when other player starts race
-        if(mes=="hideGoButton")
+        if(Objects.equals(mes, "hideGoButton"))
             m_goBut.setEnabled(false);
 
     }

@@ -31,17 +31,11 @@ public class CarDR implements Serializable{
     public void setPlayerNum(int value){m_playerNum = value;}
     public int getCurrentImage() { return m_currentImageIndex; }
     public void setCurrentImage(int value) { m_currentImageIndex = value; }
-    public double getX() {
-        return m_x;
-    }
-    public double getY() {
-        return m_y;
-    }
+    public double getX() { return m_x; }
+    public double getY() { return m_y; }
     public void setX(double value){ m_x = value; }
     public void setY(double value){ m_y = value; }
-    public int getSpeed() {
-        return m_speed;
-    }
+    public int getSpeed() { return m_speed; }
     // set speed only within a range of -20 to 20 else no return.
     public void setSpeed(int value) {
         if(m_speed+value < maxSpeed && m_speed+value > maxNegSpeed){m_speed = m_speed + value;}
@@ -129,7 +123,7 @@ public class CarDR implements Serializable{
             setX(Double.parseDouble(carData[2]));
             setY(Double.parseDouble(carData[3]));
             setSpeed(Integer.parseInt(carData[4]));
-            setLap(Double.parseDouble(carData[5]));
+            //setLap(Double.parseDouble(carData[5]));
         //}
     }
 }
