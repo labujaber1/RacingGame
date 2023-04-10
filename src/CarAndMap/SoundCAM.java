@@ -1,14 +1,19 @@
+/**
+ * Title: Distributed multiplayer racing game.
+ * <p>Description: Local two player car race game operating from the same keyboard.</p>
+ * Date: 21/04/2023
+ * @author labuj 2018481
+ * @version 1.2
+ */
 package CarAndMap;
 
 import javax.sound.sampled.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+
 /**
- * Title: Distributed multi-player racing game.
- * Date: 21/04/2023
- * @author labuj 2018481
- * Description: Two player car race game operating from the same keyboard.
+ * Plays audio clips when methods, with audio path as param, called from GamepanelCAM.
  */
 public class SoundCAM {
     private URL m_crashGreen,m_crashPolice,m_crashCars,m_cheer,m_countdown;
@@ -62,8 +67,6 @@ public class SoundCAM {
         }
     }
 
-
-
     private InputStream m_inputStream;
     private AudioInputStream m_audioStream;
     private AudioFormat m_audioFormat;
@@ -103,9 +106,5 @@ public class SoundCAM {
                 }
             }
         }).start();
-
     }
-
-
-
 }

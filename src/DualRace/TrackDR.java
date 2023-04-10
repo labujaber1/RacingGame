@@ -1,3 +1,10 @@
+/**
+ * Title: Distributed multi-player racing game.
+ * <p>Description: Two player car race game using client server setup.</p>
+ * Date: 21/04/2023
+ * @author labuj 2018481
+ * @version 1.3
+ */
 package DualRace;
 
 import java.awt.*;
@@ -6,20 +13,13 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 
-/**
- * Title: Distributed multi-player racing game.
- * Date: 21/04/2023
- * @author labuj 2018481
- * Description: Two player car race game using client server setup.
- */
+
 
 /**
  * Draws 2 different tracks, track boundaries, and obstacles.
  */
 public class TrackDR {
-
     private int m_trackId, m_trackWidth, m_trackHeight;
-
     private RoundRectangle2D.Double outerBoundsRect;
     private RoundRectangle2D.Double innerBoundsRect;
     private Ellipse2D.Double outerBoundsEllip;

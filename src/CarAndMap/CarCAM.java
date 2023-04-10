@@ -1,21 +1,18 @@
 /**
- * Title:
- * Date:
- * Author: 2018481
- * Description:
+ * Title: Distributed multiplayer racing game.
+ * <p>Description: Local two player car race game operating from the same keyboard.</p>
+ * Date: 21/04/2023
+ * @author labuj 2018481
+ * @version 1.2
  */
 package CarAndMap;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 
 /**
- * Title: Distributed multi-player racing game.
- * Date: 21/04/2023
- * @author labuj 2018481
- * Description: Two player car race game operating from the same keyboard.
+ * Car class containing constructor, getters and setters.
  */
 public class CarCAM {
 

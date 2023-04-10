@@ -1,3 +1,10 @@
+/**
+ * Title: Distributed multiplayer racing game.
+ * <p>Description: Local two player car race game operating from the same keyboard.</p>
+ * Date: 21/04/2023
+ * @author labuj 2018481
+ * @version 1.2
+ */
 package CarAndMap;
 
 import javax.swing.*;
@@ -5,10 +12,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 /**
- * Title: Distributed multi-player racing game.
- * Date: 21/04/2023
- * @author labuj 2018481
- * Description: Two player car race game operating from the same keyboard.
+ * Mainframe creates JFrame and actions buttons and key presses.
  */
 public class MainframeCAM extends JFrame implements KeyListener{
     private final JButton m_goBut, m_exitBut;

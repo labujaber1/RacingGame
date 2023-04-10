@@ -1,3 +1,10 @@
+/**
+ * Title: Distributed multi-player racing game.
+ * <p>Description: Two player car race game using client server setup.</p>
+ * Date: 21/04/2023
+ * @author labuj 2018481
+ * @version 1.3
+ */
 package DualRace;
 
 import javax.sound.sampled.*;
@@ -5,14 +12,7 @@ import java.io.IOException;
 import java.net.URL;
 
 /**
- * Title: Distributed multi-player racing game.
- * Date: 21/04/2023
- * @author labuj 2018481
- * Description: Two player car race game using client server setup.
- */
-
-/**
- * Plays audio clips passed in params when called from gamepanel.
+ * Plays audio clips passed in params when called from GamepanelDR.
  */
 public class SoundDR {
     private URL m_url;

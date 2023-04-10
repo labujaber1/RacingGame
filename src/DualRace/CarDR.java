@@ -1,8 +1,9 @@
 /**
- * Title:
- * Date:
- * Author: 2018481
- * Description:
+ * Title: Distributed multi-player racing game.
+ * <p>Description: Two player car race game using client server setup.</p>
+ * Date: 21/04/2023
+ * @author labuj 2018481
+ * @version 1.3
  */
 package DualRace;
 
@@ -11,10 +12,7 @@ import java.awt.geom.*;
 import java.io.Serializable;
 
 /**
- * Title: Distributed multi-player racing game.
- * Date: 21/04/2023
- * @author labuj 2018481
- * Description: Two player car race game using client server setup.
+ * Car class containing constructor, getters and setters.
  */
 public class CarDR implements Serializable{
     private static final long serialVersionUID = -5208728886913377954L;
@@ -125,14 +123,14 @@ public class CarDR implements Serializable{
     public void setCarData(String data)
     {
         String[] carData = data.split(",");
-        if (carData[0].equals(m_playerNum)) {
+        //if (carData[0].equals(m_playerNum)) {
             //setPlayerNum(Integer.parseInt(carData[0]));
             setCurrentImage(Integer.parseInt(carData[1]));
             setX(Double.parseDouble(carData[2]));
             setY(Double.parseDouble(carData[3]));
             setSpeed(Integer.parseInt(carData[4]));
             setLap(Double.parseDouble(carData[5]));
-        }
+        //}
     }
 }
 

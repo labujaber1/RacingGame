@@ -1,19 +1,12 @@
-/**
- * Title: Distributed multi-player racing game.
- * Date: 21/04/2023
- * @author labuj 2018481
- * Description: Two player car race game using client server setup.
- */
+
 package DualRace;
 
 /**
- * Main method to start Mainframe.
+ * Main method to start MainframeDR.
  */
 public class RungameDR {
-
     public static void main(String[] args)  {
 
-        MainframeDR mf1 = new MainframeDR("A car and map racing game");
-
+        MainframeDR mf1 = new MainframeDR("A car and map racing game player 1");
     }
 }

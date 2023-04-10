@@ -1,10 +1,15 @@
+/**
+ * Car race for two players using client server.
+ */
 package DualRace;
 
-import DualRace.GamepanelDR;
 import java.io.*;
 import java.net.*;
 
-
+/**
+ * Separate client server class now deprecated.
+ * @deprecated Class merged into GamepanelDR class
+ */
 public class ClientDR extends Thread{
     private final int m_port;
     private final String m_serverName;
@@ -54,7 +59,7 @@ public class ClientDR extends Thread{
 
     /**
      * Create new socket connection.
-     * @return
+     * @return connected true or false
      */
     public boolean connect()
     {
@@ -126,10 +131,6 @@ public class ClientDR extends Thread{
             System.out.println("Error sending to server: " + e.getMessage());
         }
     }
-
-
-
-
 }
 
 

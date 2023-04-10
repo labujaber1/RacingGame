@@ -1,3 +1,10 @@
+/**
+ * Title: Distributed multi-player racing game.
+ * <p>Description: Two player car race game using client server setup.</p>
+ * Date: 21/04/2023
+ * @author labuj 2018481
+ * @version 1.3
+ */
 package DualRace;
 
 import javax.swing.*;
@@ -7,16 +14,18 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+
 /**
- * Title: Distributed multi-player racing game.
- * Date: 21/04/2023
- * @author labuj 2018481
- * Description: Two player car race game using client server setup.
+ * Main JFrame with buttons and key presses.
  */
 public class MainframeDR extends JFrame implements KeyListener{
-    private final JButton m_goBut, m_exitBut, m_connect, m_disconnect;
+    private static JButton m_goBut;
+    private final JButton m_exitBut;
+    private final JButton m_connect;
+    private final JButton m_disconnect;
     private final GamepanelDR m_gp;
     private static JTextArea m_comms;
+    private static Boolean setGoBut = false;
     private static JTextArea m_textarea;
 
     /**
@@ -97,7 +106,11 @@ public class MainframeDR extends JFrame implements KeyListener{
 
     public static void passToTextArea(String mes)
     {
-        m_comms.append(mes);
+        m_comms.append("\n"+mes);
+        // blank out go button when other player starts race
+        if(mes=="hideGoButton")
+            m_goBut.setEnabled(false);
+
     }
     /**
      * Button listeners to start race, connect and disconnect to server, and exit game.
@@ -107,29 +120,31 @@ public class MainframeDR extends JFrame implements KeyListener{
         @Override
         public void actionPerformed(ActionEvent a) {
             Object buttonPressed =	a.getSource();
-            if (buttonPressed.equals(m_goBut)&& m_gp.canStartGame())
+            if (buttonPressed.equals(m_goBut)&& m_gp.canStartGame().equals(true))
             {
+                m_gp.sendGoMessage();
                 m_goBut.setEnabled(false);
                 m_gp.resetAllCars();
+                requestFocus(true);
             }
-            if (buttonPressed.equals(m_goBut)&& !m_gp.canStartGame())
+            if (buttonPressed.equals(m_goBut)&& !m_gp.canStartGame().equals(true))
             {
                 JOptionPane.showMessageDialog(null, "Waiting for player 2 to join");
+                requestFocus();
             }
             if(buttonPressed.equals(m_connect))
             {
                 m_connect.setEnabled(false);
                 m_disconnect.setEnabled(true);
-                m_gp.checkConnect(true);
+                m_gp.setConnect(true);
                 m_gp.startClientServer();
                 requestFocus(true);
-
             }
             if(buttonPressed.equals(m_disconnect))
             {
                 m_connect.setEnabled(true);
                 m_disconnect.setEnabled(false);
-                m_gp.checkConnect(false);
+                m_gp.setConnect(false);
                 m_gp.stopClientServer();
                 requestFocus(true);
             }

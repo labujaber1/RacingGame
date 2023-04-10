@@ -11,8 +11,7 @@ is a 2D overview of the tract and car. The game will also end if the cars collid
 but invokes a bounce reaction if they collide with the track boundary. Tha cars are operated by 
 the directional keys and WADZ keys.
 
-In developement
 The third stage DualRace uses a client and server setup to show a use of distributed programming.
-The user provides an ip address to log into the server and selects the player number before the 
-game starts. The game then behaves the same as the second stage and still ends when a user completes
-3 laps or the cars collide with each other. 
+The user provides an ip address and port number to log into the server and the server sends the 
+player number before the game starts. The game then behaves the same as the second stage but only
+ends when a user completes 3 laps not when the cars collide, instead they now bounce off each other. 

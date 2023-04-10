@@ -1,10 +1,10 @@
 /**
- * Title: Distributed multi-player racing game.
- * Date: 21/04/2023
+ * Title: Distributed multiplayer racing game.
+ * <p>Description: Display a set of multi-angled car images in both a continuous loop
+ *  * and operated by key press.</p>
+ * &#064;date  21/04/2023
  * @author 2018481
- * Description: Display a set of multi-angled car images in both a continuous loop
- * and operated by key press.
- *
+ * @version 1.1
  */
 package CarSpin;
 
@@ -110,8 +110,6 @@ public class MainframeCS extends JFrame implements KeyListener{
                 System.out.println("RIGHT Key pressed: " + e.getKeyCode());
                 m_gp.turnImg( step);
                 break;
-
-
         }
     }
 

@@ -1,3 +1,10 @@
+/**
+ * Title: Distributed multiplayer racing game.
+ * <p>Description: Local two player car race game operating from the same keyboard.</p>
+ * Date: 21/04/2023
+ * @author labuj 2018481
+ * @version 1.2
+ */
 package CarAndMap;
 
 import javax.imageio.ImageIO;
@@ -9,17 +16,14 @@ import java.awt.image.BufferedImage;
 import java.net.URL;
 
 /**
- * Title: Distributed multi-player racing game.
- * Date: 21/04/2023
- * @author labuj 2018481
- * Description: Two player car race game operating from the same keyboard.
+ * Game panel extends JPanel contains methods for to display and race cars on chosen racetrack
+ * for two players.
  */
 public class GamepanelCAM extends JPanel {
 
     private BufferedImage m_imageG, m_imageP,m_crowd,m_cup,m_tree,m_wall,m_bush;
     private Timer animationTimer;
     private ImageIcon greenCarArr[], policeCarArr[];
-    //private BufferedImage greenCarArr[], policeCarArr[];
     private CarCAM m_greenCar,m_policeCar;
     private TrackCAM m_track;
     private int m_trackChoice;
@@ -37,8 +41,6 @@ public class GamepanelCAM extends JPanel {
         int totalImages = 16;
         greenCarArr = new ImageIcon[totalImages];
         policeCarArr = new ImageIcon[totalImages];
-        //greenCarArr = new BufferedImage[totalImages];
-        //policeCarArr = new BufferedImage[totalImages];
         m_crashGreen = ("Sounds/fast-collision.wav");
         m_crashPolice = ("Sounds/clank-car-crash.wav");
         m_crashCars = ("Sounds/squish.wav");
@@ -92,7 +94,7 @@ public class GamepanelCAM extends JPanel {
         // centre lap and speed display
         g2d.setColor(Color.white);
         g2d.setFont(new Font("MV Boli", Font.BOLD, 20));
-        if(go == true) {
+        if(go) {
             g2d.drawString("GET READY", 450, 100);
             stopAnimation();
             resetGo();
@@ -113,8 +115,6 @@ public class GamepanelCAM extends JPanel {
             sound.cheer();
             stopAnimation();
         }
-        //greenCarArr[m_greenCar.getCurrentImage()].paintIcon(this, g2d, (int) m_greenCar.getX(), (int) m_greenCar.getY());
-        //policeCarArr[m_policeCar.getCurrentImage()].paintIcon(this, g2d, (int) m_policeCar.getX(), (int) m_policeCar.getY());
 
         try {
             if (animationTimer.isRunning()) {
@@ -127,8 +127,6 @@ public class GamepanelCAM extends JPanel {
                 // update lap count
                 lapCount(g);
             }
-            //greenCarArr[m_greenCar.getCurrentImage()].paintIcon(this, g2d, (int) m_greenCar.getX(), (int) m_greenCar.getY());
-            //policeCarArr[m_policeCar.getCurrentImage()].paintIcon(this, g2d, (int) m_policeCar.getX(), (int) m_policeCar.getY());
         } catch (Exception e) {
             System.out.println("Error checking animation timer: " + e.getMessage());
         }
@@ -269,7 +267,6 @@ public class GamepanelCAM extends JPanel {
         g2d.setColor(Color.yellow);
         g2d.draw(police);
         g2d.draw(green);
-        //System.out.println("Collision m_x: "+c.getX()+", m_y: "+c.getY());
         // hit map boundaries
         if(track.getInnerBounds().intersects(green.getBounds2D()) || !track.getOuterBounds().intersects(green.getBounds2D())
                 || track.getObstacleBounds().intersects(green.getBounds2D()))
