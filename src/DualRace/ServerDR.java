@@ -130,6 +130,7 @@ public class ServerDR extends Thread {
             //start server and wait for connection
             while (m_connections.size()<2)
             {
+                // Can keep connection in arraylist when closes in error.
                 if(m_connections.size()>2){checkConnections();}
                 sendToTextArea("Server: Run: waiting for socket connection");
                 Socket s = m_listenSocket.accept();
@@ -137,7 +138,6 @@ public class ServerDR extends Thread {
                 Connection c = new Connection( s ,this);
                 m_connections.add(c);
                 sendToTextArea("Server: Run: connection started");
-                //new Thread(c).start();
                 c.start();
                 sendToTextArea("Server: Run: New connection made "+ c);
                 sendToTextArea("Server: Run: Client " +m_connections.size()+ " connected: "+s);
@@ -145,7 +145,6 @@ public class ServerDR extends Thread {
                 if(m_connections.size()==1)
                 {
                     m_connections.get(0).send("1");
-
                     sendToTextArea("Waiting for player 2 to join");
                 }
                 if(m_connections.size()==2)
@@ -188,7 +187,7 @@ public class ServerDR extends Thread {
     }
 
     /**
-     * Takes in a string message to send to all clients in connections arraylist.
+     * Takes in a string message and checks which client to send by ID. If no ID send to all.
      * @param mes string message
      */
     public void reply(String mes)
@@ -333,6 +332,7 @@ class Connection extends Thread
             throw new RuntimeException(e);
         }
     }
+
     /**
      * Override start method with run to begin reading and writing to input and output stream.
      * In a continuous loop while connection exists.
@@ -369,7 +369,7 @@ class Connection extends Thread
      */
     private String interp(String mes)
     {
-        if (mes.equals("exit") || mes.equals("close"))
+        if (mes.equals("exit") || mes.equals("Disconnected"))
         {
             try {
                 sendToTextArea("Closing client and server connections..");

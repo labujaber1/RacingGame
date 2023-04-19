@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="IntellijPhase1:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/IntellijPhase1_jar</output-path>
+    <root id="archive" name="RacingGame.jar">
+      <element id="module-output" name="RacingGame" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/src/CarSpin/META-INF/MANIFEST.MF" />
+      </element>
+    </root>
+  </artifact>
+</component>

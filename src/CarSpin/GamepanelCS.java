@@ -42,10 +42,10 @@ public class GamepanelCS extends JPanel {
             for (int i = 0; i < greenCar.length; i++) {
                 int imageIndex = i + 1;
 
-                m_imageR = getImage("/carGreen/carGreen" + imageIndex + ".png");
+                m_imageR = getImage("carGreen/carGreen" + imageIndex + ".png");
                 greenCar[i] = new ImageIcon(m_imageR);
 
-                m_imageP = getImage("/carPolice/carPolice" + imageIndex + ".png");
+                m_imageP = getImage("carPolice/carPolice" + imageIndex + ".png");
                 policeCar[i] = new ImageIcon(m_imageP);
             }
 

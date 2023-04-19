@@ -88,7 +88,7 @@ public class MainframeDR extends JFrame implements KeyListener{
         JScrollPane m_sPane = new JScrollPane(m_comms);
         m_sPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         m_sPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        textPanel.add(m_sPane,BorderLayout.CENTER); ///////
+        textPanel.add(m_sPane,BorderLayout.CENTER);
 
         m_gp.setBackground(Color.lightGray);
         m_gp.setVisible(true);
@@ -128,7 +128,7 @@ public class MainframeDR extends JFrame implements KeyListener{
                 m_gp.resetAllCars();
                 requestFocus(true);
             }
-            if (buttonPressed.equals(m_goBut)&& !m_gp.canStartGame().equals(true))
+            if (buttonPressed.equals(m_goBut)&& m_gp.canStartGame().equals(false))
             {
                 JOptionPane.showMessageDialog(null, "Waiting for player 2 to join");
                 requestFocus();
@@ -137,7 +137,6 @@ public class MainframeDR extends JFrame implements KeyListener{
             {
                 m_connect.setEnabled(false);
                 m_disconnect.setEnabled(true);
-                m_gp.setConnect(true);
                 m_gp.startClientServer();
                 requestFocus(true);
             }
@@ -145,7 +144,6 @@ public class MainframeDR extends JFrame implements KeyListener{
             {
                 m_connect.setEnabled(true);
                 m_disconnect.setEnabled(false);
-                m_gp.setConnect(false);
                 m_gp.stopClientServer();
                 requestFocus(true);
             }

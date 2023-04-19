@@ -51,10 +51,10 @@ public class GamepanelCAM extends JPanel {
         try {
             for (int i = 0; i < greenCarArr.length; i++) {
                 int imageIndex = i + 1;
-                m_imageG = getImage("/carGreen/carGreen" + imageIndex + ".png");
+                m_imageG = getImage("carGreen/carGreen" + imageIndex + ".png");
                 greenCarArr[i] = new ImageIcon(m_imageG);
 
-                m_imageP = getImage("/carPolice/carPolice" + imageIndex + ".png");
+                m_imageP = getImage("carPolice/carPolice" + imageIndex + ".png");
                 policeCarArr[i] = new ImageIcon(m_imageP);
             }
             m_crowd = getImage("/crowd2.jpg");
