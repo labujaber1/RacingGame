@@ -66,11 +66,11 @@ public class GamepanelDR extends JPanel {
                 BufferedImage m_imageP = getImage("carPolice/carPolice" + imageIndex + ".png");
                 policeCarArr[i] = m_imageP;
             }
-            m_crowd = getImage("/crowd2.jpg");
-            m_cup = getImage("/cup.jpg");
-            m_tree = getImage("/tree1.jpg");
-            m_wall = getImage("/wall1.jpg");
-            m_bush = getImage("/bush1.jpg");
+            m_crowd = getImage("crowd2.jpg");
+            m_cup = getImage("cup.jpg");
+            m_tree = getImage("tree1.jpg");
+            m_wall = getImage("wall1.jpg");
+            m_bush = getImage("bush1.jpg");
             m_greenCar = new CarDR(1,4,365,30,0,0);
             m_policeCar = new CarDR(2,4,365,80,0,0);
         } catch (Exception e) {
@@ -94,12 +94,12 @@ public class GamepanelDR extends JPanel {
             g2d.drawImage(m_crowd, 382, 140, null);
             g2d.drawImage(m_crowd, 150, 350, null);
             g2d.drawImage(m_crowd, 382, 350, null);
-            m_track.drawObstacle(g,m_bush,80,100,0,0);
+            //m_track.drawObstacle(g,m_bush,80,100,0,0);
         } else if (m_trackChoice == 1) {
             g2d.drawImage(m_tree,300,180,null);
             g2d.drawImage(m_tree,500,180,null);
-            m_track.drawObstacle(g,m_bush,120,300,0,0);
-            m_track.drawObstacle(g,m_wall,590,460,0,0);
+            //m_track.drawObstacle(g,m_bush,120,300,0,0);
+            //m_track.drawObstacle(g,m_wall,590,460,0,0);
         } else {System.exit(0);}
 
         // centre lap, speed display and start countdown
@@ -484,15 +484,15 @@ public class GamepanelDR extends JPanel {
         g2d.setColor(Color.white);
 
         // hit map boundaries with different message and sound played for each car
-        if(track.getInnerBounds().intersects(green.getBounds2D()) || !track.getOuterBounds().intersects(green.getBounds2D())
-         || track.getObstacleBounds().intersects(green.getBounds2D()))
+        if(track.getInnerBounds().intersects(green.getBounds2D()) || !track.getOuterBounds().intersects(green.getBounds2D()))
+         //|| track.getObstacleBounds().intersects(green.getBounds2D()))
         {
             sound.Play(m_crashGreen);
             m_greenCar.setSpeed(-m_greenCar.getSpeed() - m_greenCar.getSpeed());
             sendToTextArea("Green car collided with the boundary");
         }
-        if(track.getInnerBounds().intersects( police.getBounds2D()) || !track.getOuterBounds().intersects(police.getBounds2D())
-                || track.getObstacleBounds().intersects(police.getBounds2D()))
+        if(track.getInnerBounds().intersects( police.getBounds2D()) || !track.getOuterBounds().intersects(police.getBounds2D()))
+                //|| track.getObstacleBounds().intersects(police.getBounds2D()))
         {
             sound.Play(m_crashPolice);
             m_policeCar.setSpeed(-m_policeCar.getSpeed() - m_policeCar.getSpeed());
@@ -589,6 +589,7 @@ public class GamepanelDR extends JPanel {
         private boolean m_connected;
         private DataOutputStream m_out;
         private DataInputStream m_in;
+
 
         /**
          * New client constructor.
@@ -695,7 +696,6 @@ public class GamepanelDR extends JPanel {
                     m_winner = true;
                     sendToTextArea("Other player has disconnected. You won.");
                     close();
-
                 }
                 // process incoming data if exists
                 if(!incoming.isEmpty())

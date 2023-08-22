@@ -56,7 +56,7 @@ public class MainframeCAM extends JFrame implements KeyListener{
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(1, 3));
         buttonPanel.add(m_goBut);
-       buttonPanel.add(m_exitBut);
+        buttonPanel.add(m_exitBut);
 
         m_gp.setBackground(Color.lightGray);
         m_gp.setVisible(true);

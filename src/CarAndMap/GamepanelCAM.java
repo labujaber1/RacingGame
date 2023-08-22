@@ -57,11 +57,11 @@ public class GamepanelCAM extends JPanel {
                 m_imageP = getImage("carPolice/carPolice" + imageIndex + ".png");
                 policeCarArr[i] = new ImageIcon(m_imageP);
             }
-            m_crowd = getImage("/crowd2.jpg");
-            m_cup = getImage("/cup.jpg");
-            m_tree = getImage("/tree1.jpg");
-            m_wall = getImage("/wall1.jpg");
-            m_bush = getImage("/bush1.jpg");
+            m_crowd = getImage("crowd2.jpg");
+            m_cup = getImage("cup.jpg");
+            m_tree = getImage("tree1.jpg");
+            m_wall = getImage("wall1.jpg");
+            m_bush = getImage("bush1.jpg");
             m_greenCar = new CarCAM(4,365,30,0,0);
             m_policeCar = new CarCAM(4,365,80,0,0);
         } catch (Exception e) {
@@ -282,6 +282,7 @@ public class GamepanelCAM extends JPanel {
         }
         if(track.getInnerBounds().intersects( police.getBounds2D()) || !track.getOuterBounds().intersects(police.getBounds2D())
                 || track.getObstacleBounds().intersects(police.getBounds2D()))
+
        {
             sound.crashPolice();
             if(m_policeCar.getSpeed() > 0) {

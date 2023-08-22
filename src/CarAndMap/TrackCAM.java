@@ -159,7 +159,7 @@ public class TrackCAM {
      * @param w - width of image to create shape
      * @param h - height of image to create shape
      */
-    public void drawObstacle(Graphics g,BufferedImage im,double x, double y,double w, double h)
+    public void drawObstacle(Graphics g,BufferedImage im, double x, double y,double w, double h)
     {
         Graphics2D g2d = (Graphics2D) g;
         w = im.getWidth();

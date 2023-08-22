@@ -1,5 +1,7 @@
 # RacingGame
-Three staged car racing game developement to a client server setup.
+Three staged car racing game fully developed in Java and swing to a client server setup. Includes 
+documentation created as HTML files by auto generation.
+
 The first stage CarSpin simply shows 2 images of a car. The first car loops through an array of
 images giving the impression its spinning. The second car can be moved through the image array 
 using the left and right keys giving the impression its turning.

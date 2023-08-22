@@ -40,6 +40,9 @@ public class CarDR implements Serializable{
     public void setSpeed(int value) {
         if(m_speed+value < maxSpeed && m_speed+value > maxNegSpeed){m_speed = m_speed + value;}
     }
+    public void updateSpeed(int value){
+        m_speed = value;
+    }
     public double getLap() { return m_lap; }
     public void setLap(double value) { m_lap = m_lap+value; }
 
@@ -122,7 +125,7 @@ public class CarDR implements Serializable{
             setCurrentImage(Integer.parseInt(carData[1]));
             setX(Double.parseDouble(carData[2]));
             setY(Double.parseDouble(carData[3]));
-            setSpeed(Integer.parseInt(carData[4]));
+            updateSpeed(Integer.parseInt(carData[4]));
             //setLap(Double.parseDouble(carData[5]));
         //}
     }
